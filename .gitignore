@@ -1,0 +1,28 @@
+# Medien bleiben lokal — fremdes Quellmaterial gehoert nie in ein oeffentliches Repo,
+# und GitHub nimmt ohnehin nichts ueber 100 MB an.
+*.mp4
+*.mov
+*.webm
+*.wav
+*.mp3
+*.m4a
+*.zip
+
+# Arbeitsordner eines Laufs
+_work/
+inbox/
+.usage/
+
+# Schluessel — NIEMALS committen. Einmal drin = fuer immer in der Historie.
+.env
+.env.*
+*.key
+*.pem
+
+.DS_Store
+__pycache__/
+.venv/
+.claude/settings.local.json
+
+# Konkrete Laeufe bleiben lokal — sie enthalten Marken-Copy und Strategie
+datenbanken/projekte-*/[A-Z][A-Z][A-Z] *

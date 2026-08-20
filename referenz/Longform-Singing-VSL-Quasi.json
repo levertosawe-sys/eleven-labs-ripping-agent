@@ -1,0 +1,508 @@
+{
+  "name": "Longform-Singing-VSL-Quasi",
+  "beschreibung": "Die QUASI-LINIE des Workflows: gebaut wird IMMER fuer die Ziel-Brand QUA - Quasi/Areum. Enthaelt die Custom-Clip-Strecke: Clips der Quelle, die fremdes Produkt-Branding zeigen, werden erkannt und durch neu animierte Clips mit dem eigenen Areum-Produkt ersetzt (Frame-Edit + Kling + Handlungs-Pruefer). Die QUASI-LINIE des Workflows: gebaut wird IMMER für die Ziel-Brand QUA - Quasi. Die Lymphoria→Leichtkraut-Linie hat ihren eigenen, getrennten Workflow (Longform-Singing-VSL-Lymphoria) — nichts wird mehr geteilt, was Brand-Wissen trägt. Der SA-RESYNC-Flow des Agenten — der Namensgeber des Repos. Aus Copy + Quellvideo: ein durchgehender deutscher Suno-Song (Persona-gepinnt, Master/unantastbar) → Bestands-Visuals frame-exakt auf den Gesang geschnitten → selbst-verifizierte Abnahme (Caption↔Gesang, ms-genau), ~0,6–0,9 €/Ad. Mensch-Gates: Lokalisierungs-Entscheid, End-Sichtung im CapCut — die Song-Wahl trifft die KI objektiv (Pacing-Ideal-Band, Runden à 5 Generierungen, Obergrenze 20, dann der Nächstbeste). Der zweite (Generation-)Flow des Agenten nutzt viele der übrigen Skills — die erscheinen hier als lose Bausteine im Befund.",
+  "tags": [
+    "import",
+    "singing-ad",
+    "ad-produktion",
+    "wsecm",
+    "produkttausch",
+    "areum"
+  ],
+  "knoten": [
+    {
+      "id": "ripping-sheet",
+      "typ": "software",
+      "projekt": "business",
+      "ref": "software/ripping-sheet",
+      "name": "Ripping Sheet",
+      "beschreibung": "Der echte Anfang der Kette: Viktor sichtet Competitor-Ads im Ripping Sheet und klickt auf einer Video-Karte ⚡ Let's Rip. Das Sheet vergibt den Projektnamen („KÜRZEL NNN | DATUM“), setzt die Ad in die Pipeline („Gestartet“) und legt den fertigen Auftrag (Projektname, Server-Pfad des Videos, Quell-Daten) in die Zwischenablage — damit startet Viktor den Chat. Sheet, Video und Workflow wohnen auf demselben Server.",
+      "nutzung": "im Browser: rippingsheet.kaetzchenwohl.de → ⚡ Let's Rip"
+    },
+    {
+      "id": "vsl-video",
+      "typ": "trigger",
+      "name": "Competitor-VSL (MP4)",
+      "beschreibung": "Der Auftrag aus dem Ripping Sheet nennt den Server-Pfad des Videos — die KI kopiert es in die Agent-Inbox, nichts verlässt den Server. Projektname kommt fertig aus dem Auftrag (Naming „KÜRZEL NNN | DATUM“, z. B. „LYM 001 | 25.07.2026“ — Details: datenbanken/projekte-quasi/DATENBANK.md §Naming). Hand-Weg ohne Sheet bleibt möglich: Viktor wirft ein MP4 in den Chat, die KI vergibt die nächste freie Nummer des Kürzels. In beiden Fällen wird VOR der Anlage der Quell-Hash gegen die Projekte-Datenbank geprüft: schon verarbeitet → STOPP, kein Doppel-Rip.",
+      "nutzung": "im Chat: Auftrag aus dem Sheet einfügen (oder MP4 reinziehen)"
+    },
+    {
+      "id": "transkription",
+      "typ": "skill",
+      "name": "Transkription (EN)",
+      "ref": ".claude/skills/singing-vsl-transkription",
+      "dienste": [
+        "ElevenLabs API"
+      ],
+      "beschreibung": "Video → englisches Transkript mit echten (M:SS)-Stempeln: ElevenLabs Scribe misst Wort-Zeitstempel direkt an der Tonspur — ein Call fürs ganze Video, kein Drift, Lücken-Wächter (>5 s) mit Fenster-Nachprüfung. Key NUR aus ~/.config/leichtkraut/.env (ELEVENLABS_API_KEY). Legt das Projekt in der Projekte-Datenbank an (Karte mit Quell-Hash) und liefert dort <slug>-original-<datum>.md ab."
+    },
+    {
+      "id": "augen-check",
+      "typ": "skill",
+      "name": "Transkript-Augencheck",
+      "ref": ".claude/skills/singing-vsl-augen-check",
+      "beschreibung": "Verdachtsstellen des frischen Transkripts (interne Widersprüche, Zahlen-/Namens-Garbles, Abweichungen von früheren Ads der Brand, unsichere Anmerkungen) per Augen-Beweis klären: Frames ums Zeitfenster ziehen und die eingebrannten EN-Captions der Quell-Ad lesen — Captions sind Wort-Autorität, nie Timing-Autorität. Korrekturen wandern mit Beleg (Caption-Zitat + Fensterzeit) ins Original-Transkript; erst dann übernimmt die Übersetzung.",
+      "nutzung": "läuft automatisch nach der Transkription"
+    },
+    {
+      "id": "clip-karte",
+      "typ": "skill",
+      "beschreibung": "§CLIP-ZUERST Schritt 1 (Viktor-Entscheid 31.07.2026, VZ-Experiment): Quelle in echte Clips zerlegen (scene>0,30), Kontakt-Sheets, Claude beschreibt JEDEN Clip mit eigenen Augen; EN-Text je Clip, Typ R/A/P, Übergangs-Flags. Werkzeug clip_karte<NNN>.py. Die Karte ist Pflicht-Eingabe der Übersetzung. PRODUKTTAUSCH-ZUSATZ: Beim Kartieren jeden Clip markieren, in dem das Produkt/die Verpackung sichtbar ist -> _work/clips/custom_clips.json (form: sachet/dose/screen/sonstiges). Diese Markierung ist die Eingabe der Custom-Clip-Production.",
+      "name": "Clip-Karte",
+      "ref": ".claude/skills/singing-vsl-clip-karte"
+    },
+    {
+      "id": "uebersetzung",
+      "typ": "skill",
+      "name": "Übersetzung (Clip-Budgets)",
+      "ref": ".claude/skills/singing-vsl-uebersetzung",
+      "beschreibung": "§CLIP-ZUERST Schritt 2: Übersetzung IN die Clip-Budgets (Silben ∝ Bild-Sekunden, Band ×3,6–×5,4 = Video 0,8–1,2; jede Zeile an ihre Clips gebunden, Format 'Cxxx-Cyyy | Zeile' in _pipeline/lyrics_plan.md). Sinn-Quelle: wortgetreue Fassung. Abweichungs-Protokoll Pflicht (GEKÜRZT/ERGÄNZT/VERSCHOBEN/TAUSCH). Prüfung + Prompt + SOLL-Fenster: plan_setup<NNN>.py. Zeitstempel-treu und strukturgleich EN→DE (1:1-Optik, Sprechzeit halten) — übersetzen ja, lokalisieren nein; Auffälliges wird als Anmerkung an die Lokalisierung durchgereicht. Ablage im Projekt-Ordner der Projekte-Datenbank."
+    },
+    {
+      "id": "lokalisierung",
+      "typ": "skill",
+      "name": "DACH-Lokalisierung",
+      "ref": ".claude/skills/singing-vsl-dach-lokalisierung",
+      "beschreibung": "Prüft die Übersetzung für DACH und liefert NUR einen Befund in Stichpunkten (Muss / Graubereich / passt) — vor dem Entscheid wird kein Wort der Copy geändert. Befund + finale Copy landen im Projekt-Ordner der Projekte-Datenbank."
+    },
+    {
+      "id": "lokalisierungs-entscheid",
+      "typ": "gate",
+      "name": "Lokalisierungs-Entscheid",
+      "beschreibung": "Viktor liest Befund + Copy selbst und entscheidet jeden Punkt. Erst danach arbeitet die KI Freigegebenes in die finale Copy des Projekt-Ordners ein; auf Zuruf wandern Copy + Quellvideo in inbox/ — der Start des Song-Flows.",
+      "nutzung": "im Chat: „passt“ / „ändere …“"
+    },
+    {
+      "id": "start",
+      "typ": "trigger",
+      "name": "Copy + Quellvideo (inbox)",
+      "beschreibung": "Viktor legt Copy (mit SOLL-Stamps) + ein Quellvideo in inbox/. Personas (m/f) stehen in brands/QUA - Quasi/CLAUDE.md.",
+      "nutzung": "im Chat: Material in inbox/, „bau eine Singing-Ad NNN SA“"
+    },
+    {
+      "id": "bootstrap",
+      "typ": "tool",
+      "name": "Projekt-Bootstrap",
+      "ref": "tools/sa",
+      "beschreibung": "new_project.py: legt den Pipeline-Ordner an, holt Copy+Video aus inbox/, MISST die Quelle (Frames/fps/Dauer per ffprobe) und portiert die Pipeline des neuesten SA-Projekts mit injizierten Konstanten (SRC_DUR, SRC_FRAMES, Persona, vocalGender) → _pipeline/sa_config.json. Trägt den Pipeline-Ordner in die Projekt-Karte der Projekte-Datenbank nach."
+    },
+    {
+      "id": "gesetz",
+      "typ": "skill",
+      "name": "Song-Gesetz (sa-resync)",
+      "ref": ".claude/skills/sa-resync-singing-ad",
+      "dienste": [
+        "Suno (kie.ai)",
+        "Gemini (kie.ai)"
+      ],
+      "beschreibung": "Das Gesetz des Flows: Song = Master (nie anfassen), Playback nur 0,8×–1,0×. Suno-Prompt + 5 Parent-Kandidaten in 5 Stilrichtungen (Ballade/organisch/rhythmisch + 2 Experiment-Styles: bei „zielgruppenspezifisch“ aus dem Research, bei „freestyle“ frei gewählt; Persona+Lyrics identisch) → song/candidates/ + _kandidaten.md mit objektiver Empfehlung (Pacing-Ratio 0,95–1,05). Ohr-Blindtests laufen über Gemini via kie.ai. Alles rechnet direkt hier auf dem Server (§Rechenort im Skill), Keys aus ~/.config/leichtkraut/.env."
+    },
+    {
+      "id": "bau",
+      "typ": "tool",
+      "name": "Song-Bau (Block-Parents)",
+      "ref": "tools/sa",
+      "dienste": [
+        "Suno (kie.ai)",
+        "Gemini (kie.ai)"
+      ],
+      "beschreibung": "§BLOCK-PARENTS: Blockschnitt (blockschnitt<NNN>.py, Blöcke 4.700–4.900 Z.) → Block 1 ohne Persona würfeln (block<NNN>.py, innerhalb der Musik-Gruppe, Ratio-Band 0,95–1,05) → Persona aus Band-Gewinner → Folgeblöcke mit Persona → Montage (montage<NNN>.py, Naht in Instrumentalzone, Pegelangleich, sqrt-Crossfade) → Naht-Ohr (§NAHT-GESETZ, Tonart-Anker). Extend-Kaskade nur noch als Hybrid-Fallback. Gewinner durch den Song-Teil der per-Projekt-Pipeline (cascade → polish → dup_scan, Gesetz: .claude/skills/sa-resync-singing-ad — große Segmente ~2400 Z., Style-Tempo-Gesetz, Hop-Tacho inkl. absolutem Silben-Deckel). Maschinen-Gates hier: start (Stimme ab Sek. 0?) + adlib (Suno-Füllzonen) aus gates.py; Politur-Loch-Schnitte nur mit Zweit-Ohr-Veto (Gesetz §Zweit-Ohr-Veto). Exit 1 = STOPP für den Bau: Befund fixen oder als Trade-off dokumentieren — NIE auf Viktor warten (sein Gate ist die CapCut-Sichtung am Ende; Viktors Entscheid 2026-07-20)."
+    },
+    {
+      "id": "pruefer",
+      "typ": "skill",
+      "name": "song-watch (Prüfer-Loop)",
+      "ref": ".claude/skills/song-watch",
+      "dienste": [
+        "Suno (kie.ai)",
+        "Gemini (kie.ai)"
+      ],
+      "beschreibung": "Der Tempo-Prüfer: vermisst den polierten Song vollständig (Silben/s je 30-s-Fenster) und hört JEDES Fenster mit Anker-kalibriertem Maschinen-Ohr ab (Modell-Wahl per Kalibrierung an zwei validierten Referenz-Clips, Pro zuerst). Gehetzte Zonen werden per Suno Replace-Section (6–60 s, Auto-Blending) nachoperiert — Loop Prüfer↔Suno bis alle Fenster grün sind oder eine Zone nach 3 OPs als benannter Trade-off ausgewiesen wird. Erst dann ist der Song fürs Schneiden frei."
+    },
+    {
+      "id": "schnitt",
+      "typ": "tool",
+      "name": "Schnitt + Render",
+      "ref": "tools/sa",
+      "beschreibung": "§CLIP-ZUERST Schritt 4–6: zeilen<NNN>.py (Zeilen-Fenster nach Kur) → bau_block<NNN>.py (Block-Anker-Schnitt: Blöcke hart am Gesang, Speed 0,8–1,2, Region-Pooling, Verlust-Gate — kein Clip fällt stumm) → render_block<NNN>.py. VZ-Referenz: 16 Sprünge statt 135. Alt-Allocator build<NNN>.py nur noch für Alt-Projekte. Der Video-Teil der per-Projekt-Pipeline auf den grünen Song (align → build → render, Gesetz: .claude/skills/sa-resync-singing-ad §Phase 2). Maschinen-Gate hier: lead (Karten-Vorlauf je Beat) aus gates.py. Nach jeder Song-OP des Prüfers läuft dieser Schritt zwingend NEU."
+    },
+    {
+      "id": "abnahme",
+      "typ": "tool",
+      "name": "Abnahme (Zeile↔Clip-Kreuzcheck)",
+      "ref": "tools/sa",
+      "dienste": [
+        "Gemini (kie.ai)"
+      ],
+      "beschreibung": "Prüft, ob jede gesungene Zeile wirklich auf IHREM Original-Bild liegt: je Beat die gesungenen Wörter aus dem Wort-Cache gegen die Clip-Beschreibung aus der Clip-Karte halten (Zeile↔Clip-Kreuzcheck), Beweis-Frames an allen Stellen des Abweichungs-Protokolls, Kontakt-Sheets über die volle Länge, Bewegungs-Check der verlangsamten Blöcke. contact_sheet.py: Caption↔Gesang-Abnahme als 4×3-Grid mit Zeitstempel (12:1 — 24 Prüfpunkte = 2 Bild-Reads), inkl. dichtem Hook-Sheet, plus Audio-Vollabgleich (Median-Δ/Minute) und Ohr (Gemini via kie.ai)."
+    },
+    {
+      "id": "faktencheck",
+      "typ": "skill",
+      "name": "/watch Fakten-Check",
+      "ref": ".claude/skills/watch-factcheck",
+      "beschreibung": "Der visuelle Zwilling vor jedem „fertig“: die fertige Ad per /watch gegen den Plan prüfen — nur FAKTEN (richtige Frau durchgängig, Produkt da, Beat = Plan-Inhalt, kein Artefakt), TRUE/FALSE, nie Timing (= Zahlen), nie Geschmack. Fund → Ursache 1–3 Steps zurück."
+    },
+    {
+      "id": "vmake-clean",
+      "typ": "skill",
+      "name": "vmake-caption-entfernen",
+      "ref": ".claude/skills/vmake-caption-entfernen",
+      "dienste": [
+        "Vmake API"
+      ],
+      "beschreibung": "Eingebrannte Quell-Captions per Vmake (videoscreenclear) tilgen — IMMER auf der GLATTEN QUELLE, direkt nach dem Augen-Check und VOR der Clip-Karte (Viktors Entscheid 05.08.2026, QUA-018-Lauf; vorher saß der Knoten hinter dem Faktencheck aus der Render-Bereinigungs-Ära). Gründe, alle gemessen: (1) Inpainting nutzt Nachbar-Frames — die glatte Quelle rekonstruiert sichtbar besser als der geschnittene Render; (2) die Clip-Karte zerlegt _work/vmake_cleaned.mp4 als Pflicht-Input; (3) Vmake dauert bei Longform ~1 h und läuft vorne parallel zu Übersetzung/Lokalisierung/Gate statt am Ende zu blockieren; (4) EIN Quell-Lauf deckt alle Re-Renders der song-watch-OPs ab. HARTE GRENZE: nie vor dem Augen-Check — der liest die eingebrannten Captions als Wort-Autorität. Ablauf: Frame-Zahl-Check gegen sa_config, Schlieren-Scan + Crop-Sichtung Pflicht, Original als _work/source_original.mp4 sichern, dann vmake_cleaned.mp4 → _work/source.mp4. STANDING-ENTSCHEID (Viktor 2026-07-24) bleibt: tools/sa/capcut_paket.py erzwingt die Existenz von _work/vmake_cleaned.mp4 per Gate; Überspringen nur per --ohne-vmake auf ausdrücklichen Zuruf. Befund ehrlich zeigen statt durchwinken."
+    },
+    {
+      "id": "captions",
+      "typ": "skill",
+      "name": "sa-captions-capcut",
+      "ref": ".claude/skills/sa-captions-capcut",
+      "dienste": [
+        "ElevenLabs API"
+      ],
+      "beschreibung": "Der Server-Teil der Caption-Arbeit (Skill-Schritte 1–5): Lyrics wortgetreu + Demucs-Vocal-Stem + ElevenLabs Forced Alignment — misst die exakten Wortzeiten des GESUNGENEN Texts (Erfolg = Wortzahl exakt gleich, Kreuz-Check vs Wort-Cache ≤0,3 s) → Musik-Finder-Häppchen (1–4 Wörter/26 Zeichen, keine Satzzeichen) mit Karaoke-Wort-Timings. Kollaps-Wächter + Standzeit-Prüfung (FA kann kollabieren; nie gesungene Wörter fliegen aus dem Caption-Strom). Audio unverändert → Häppchen wiederverwendbar. Abschluss: tools/sa/capcut_paket.py schnürt das Übergabe-Paket (Gate: vmake_cleaned.mp4 muss existieren) und druckt den fertigen Ein-Prompt für den Mac-Chat. PFLICHT-ABSCHLUSS DES LAUFS (Viktors Ansage 03.08.2026): Der Lauf endet IMMER damit, dass der fertige Ein-Prompt als kopierfertiger Block IM CHAT steht — nicht mit „das Paket liegt bereit\". Viktor soll ihn direkt herauskopieren können, ohne eine Datei zu öffnen. Der Block nennt: rsync-Zeile, „Schritte 1–5 nicht wiederholen\", den exakten CapCut-Projektnamen („KÜRZEL NNN | DATUM\"), die Ad-Datei mit Länge und Häppchen-Zahl, und den touch-Befehl für den CAPCUT-GEPUSHT-Marker. PFAD-REGEL: In rsync- und touch-Zeile steht IMMER die AX41 (65.108.228.40) mit dem Werkstatt-Pfad /root/AWMS/Longform-Singing-VSL-Agent/brands/<Brand>/<NNN SA>/_capcut-paket/ — NIE die IP oder der /root/arbeit/-Pfad eines Cloud-Worker-Bündels. Der Mac holt immer aus der Werkstatt, und ein Bündel-Worker wird direkt nach dem Rücksync gelöscht (gemessen im 009-Lauf: der Prompt trug die Worker-IP und wäre ins Leere gelaufen). Beim Aufruf von tools/sa/capcut_paket.py deshalb --ip immer weglassen oder auf die AX41 setzen, auch wenn der Lauf auf einem Worker rechnet."
+    },
+    {
+      "id": "capcut-push",
+      "typ": "skill",
+      "name": "CapCut-Push (Mac-Chat)",
+      "ref": ".claude/skills/sa-captions-capcut",
+      "umgebung": "mac",
+      "beschreibung": "Der lokale Arbeits-Schritt: Viktor fügt den Ein-Prompt aus dem Übergabe-Paket in einen NEUEN lokalen Claude-Chat auf seinem Mac ein. Der lokale Chat zieht das Paket per rsync vom Server und arbeitet NUR Schritt 6–8 desselben Captions-Skills ab: CapCut-Draft mit dem Projektnamen des Rips („KÜRZEL NNN | DATUM“) bauen, Karaoke-Stil anwenden (UI-Apply kann nur CapCut selbst — notfalls mit Viktors Hand), CapCut neu starten, Bericht samt Server-Bilanz. Schritte 1–5 sind auf dem Server gelaufen und werden NIE wiederholt (kostet einen ElevenLabs-Call und überschreibt geprüfte Timings). Anleitung liegt im Paket: UEBERGABE-CAPCUT.md.",
+      "nutzung": "am Mac: Ein-Prompt in neuen lokalen Claude-Chat einfügen — der Block steht am Ende des Server-Laufs kopierfertig im Chat (und zusätzlich als PROMPT-FUER-MAC.txt)"
+    },
+    {
+      "id": "capcut-sichtung",
+      "typ": "gate",
+      "name": "CapCut-Sichtung",
+      "umgebung": "mac",
+      "beschreibung": "Das Mensch-Gate am Ende (Viktors Entscheid 2026-07-20): Viktor sichtet die fertige Ad im frisch gebauten CapCut-Projekt — Captions sitzen? Vmake-Schlieren verdeckt er selbst mit seiner Methode (bekannter, akzeptierter Effekt) — und exportiert. Sein Feedback fließt über /feedback in Skills/Workflow zurück; Maschinen-Gate-Befunde und dokumentierte Trade-offs des Laufs werden ihm hier vorgelegt.",
+      "nutzung": "in CapCut: sichten + exportieren · Feedback im Chat"
+    },
+    {
+      "id": "projekte",
+      "typ": "datenbank",
+      "name": "Projekte (Quasi-Linie)",
+      "ref": "datenbanken/projekte-quasi",
+      "beschreibung": "Ein Ordner je Singing-VSL-Projekt DIESER Linie (Ziel-Brand QUA - Quasi) (Naming „KÜRZEL NNN | DATUM“, z. B. „LYM 001 | 25.07.2026“ — Wahrheitsort: datenbanken/projekte-quasi/DATENBANK.md §Naming): Karte mit Quell-Video-Hash (Doppel-Rip-Schutz) + Vorstufen-Dateien — Transkript, Übersetzung, Befund, finale Copy."
+    },
+    {
+      "id": "learnings",
+      "typ": "datenbank",
+      "name": "Learnings",
+      "ref": "datenbanken/learnings",
+      "beschreibung": "Der destillierte Erfahrungsschatz des Agenten (MASTER-LEARNINGS + memory/) — wird vor jedem Build und beim Fakten-Check gelesen."
+    },
+    {
+      "id": "formate",
+      "typ": "datenbank",
+      "name": "Formate",
+      "ref": "datenbanken/formate",
+      "beschreibung": "Format-Referenzen des Agenten (context/formats) — die Suno-Kaskade liest die Singing-Ad-Regeln von hier."
+    },
+    {
+      "ref": "datenbanken/musik-gruppen",
+      "beschreibung": "Kanonischer Style-Kern + Tonart-Anker + Persona (mit Neuerzeugungs-Beschreibung) + typische Ratio je Gruppe. Ad-Läufe würfeln INNERHALB einer Gruppe (nur {bpm}/{energie}) — die Style-Suche fällt einmal je Gruppe an, nicht je Ad. ANGELEGT wird eine Gruppe im eigenen Workflow „Musikgruppen-Erstellung\" (anderer Takt: selten und aufwendig statt häufig und benutzend); dieser Ad-Workflow liest nur. Welche Gruppe eine Ad benutzt, wird beim Auftrag gewählt und in der Projekt-Karte festgehalten — sonst ist später nicht auswertbar, welche Musik gewann.",
+      "name": "Musik-Gruppen",
+      "id": "musik-gruppen",
+      "typ": "datenbank"
+    },
+    {
+      "id": "brand-quasi",
+      "typ": "datenbank",
+      "name": "Brand-DB Quasi (QUA)",
+      "ref": "datenbanken/brand-quasi",
+      "projekt": "business",
+      "beschreibung": "Brand-Wissensdatenbank der Ziel-Brand Quasi (QUA) (AWMS-Ebene): Shopify-Store-Doku (der Store ist der Maßstab — Kräuternamen, Dosierung, Garantie, Claims), Research Ansammlung (Research-first: erst lesen, nur bei Lücke neu researchen und zurückschreiben — auch Musikgeschmack) und lokalisierungs-log.md (append-only Gate-Entscheidungen; zwei gleiche hintereinander = Muster, das die KI ohne Rückfrage anwendet). In diesem Workflow gilt IMMER diese Brand-DB — die Linie ist die Ziel-Brand QUA - Quasi, es gibt nichts zu wählen. NEU: Unterordner \"Product Reference/\" traegt die Referenzbilder des rebrandeten Areum-Produkts (Sachet, Dose, kuenftig Shop-Screenshots) - die Custom-Clip-Production liest ausschliesslich von dort."
+    },
+    {
+      "id": "ad-upload",
+      "typ": "skill",
+      "name": "Ad-Upload (Meta)",
+      "ref": ".claude/skills/ad-upload",
+      "dienste": [
+        "Meta Marketing API"
+      ],
+      "beschreibung": "Der Abschluss der Kette: Die aus CapCut exportierte MP4 landet im Einwurf-Ordner (/root/AWMS/UPLOAD, Drag&Drop im FileBrowser), das Ripping Sheet liefert den Aktivierungs-Prompt. Im Chat werden Primary Text und Headline aus der finalen Copy erarbeitet, dann legt tools/ad-upload/upload.py Video, Anzeigengruppe (Einstellungen 1:1 aus der Vorlage-AdSet kopiert) und Creative im Werbekonto an — die Anzeige IMMER pausiert. Die Anzeigengruppe trägt den Projektnamen, damit Sheet und Meta einander wiederfinden. Ergebnis: upload.json im Projektordner — daran erkennt das Ripping Sheet, dass das Projekt gelauncht ist, und nimmt es aus der Pipeline.",
+      "nutzung": "im Chat: Upload-Auftrag aus dem Ripping Sheet einfügen (Skill /ad-upload)"
+    },
+    {
+      "id": "ad-uploader",
+      "typ": "tool",
+      "name": "Ad-Uploader (Meta API)",
+      "ref": "tools/ad-upload",
+      "projekt": "business",
+      "dienste": [
+        "Meta Marketing API"
+      ],
+      "beschreibung": "Das Werkzeug hinter dem Skill: upload.py spricht die Meta Marketing API. Es liest das Adressbuch (ziele.json), holt die MP4 aus dem Einwurf-Ordner /root/AWMS/UPLOAD (Dateiname trägt den Projektnamen — passt kein Muster, landet sie unter „unklar“ und der Chat fragt nach), lädt das Video hoch und legt Anzeigengruppe (Einstellungen 1:1 aus der Vorlage-AdSet), Creative und Anzeige an — die Anzeige IMMER pausiert. Ergebnis: upload.json im Projektordner (zugleich Doppel-Upload-Schutz). Befehle: pruefen (Trockenübung), hochladen, bericht [--live]."
+    },
+    {
+      "id": "meta-werbekonto",
+      "typ": "datenbank",
+      "name": "Meta-Werbekonto",
+      "ref": "datenbanken/meta-werbekonto",
+      "projekt": "business",
+      "beschreibung": "Wohin Ads gehen UND wo sie danach liegen. Adressbuch (tools/ad-upload/ziele.json): je Ziel-Brand-Kürzel ein Eintrag mit Werbekonto, Seite, Pixel, Kampagne, Vorlage-Anzeigengruppe, Ziel-Link und CTA — neue Brand = neuer Eintrag, geändert wird dort, nie im Code. Ablageort: das Meta-Werbekonto selbst, in dem die hochgeladenen Anzeigen liegen und über den Projektnamen („KÜRZEL NNN | DATUM“ = Name der Anzeigengruppe) wiedergefunden werden. Der Uploader erfindet nichts — Budget, Zielgruppe und Platzierungen kommen aus der Vorlage-AdSet. Die Zugänge selbst wohnen in /root/AWMS/.env (Karte: SCHLUESSEL-KARTE.md)."
+    },
+    {
+      "id": "custom-clips",
+      "typ": "skill",
+      "name": "Custom-Clip-Production",
+      "ref": ".claude/skills/custom-clip-production",
+      "beschreibung": "Ersetzt die in der Clip-Karte markierten Produkt-Clips durch Custom Clips mit dem rebrandeten Areum-Produkt. METHODE (Viktor): NUR-START-FRAME (kein End-Frame - loest das Label-Morphing), Kling in ganzen Sekunden aufgerundet generieren, natuerliches Tempo, HART auf Originallaenge SCHNEIDEN. Die Handlungen des Originals (Gestik, Mimik) muessen im GESCHNITTENEN Stueck liegen - im Prompt frueh ansetzen, der Pruefer kontrolliert das Schnittergebnis. NUR das eigene Produkt rebranden, alles andere unangetastet. Referenzen: datenbanken/brand-quasi/Product Reference/. screen-Clips erst mit Shop-Referenzen."
+    },
+    {
+      "id": "custom-pruefer",
+      "typ": "skill",
+      "name": "Custom-Clip-Pruefer (Handlungs-Loop)",
+      "ref": ".claude/skills/custom-clip-production",
+      "beschreibung": "Prueft jeden FERTIGEN, getempten Custom Clip gegen das Handlungs-Inventar des Originals: alle Handlungen (Gestik, Mimik, Objekt, Kamera) vorhanden UND zu Ende gefuehrt, Markenname lesbar, genau EIN Produkt, Person/Szene konsistent, Laenge = Original. TRUE/FALSE je Zeile, kein Geschmack. FALSE -> Prompt nachschaerfen, neu generieren (max. 3 Versuche), danach Befund an Viktor. Ergebnis je Clip in _custom-clips/pruefer.md."
+    }
+  ],
+  "kanten": [
+    {
+      "von": "ripping-sheet",
+      "nach": "vsl-video",
+      "typ": "haupt"
+    },
+    {
+      "von": "vsl-video",
+      "nach": "transkription",
+      "typ": "haupt"
+    },
+    {
+      "von": "transkription",
+      "nach": "augen-check",
+      "typ": "haupt"
+    },
+    {
+      "von": "augen-check",
+      "nach": "vmake-clean",
+      "typ": "haupt"
+    },
+    {
+      "von": "vmake-clean",
+      "nach": "clip-karte",
+      "typ": "haupt"
+    },
+    {
+      "von": "clip-karte",
+      "nach": "uebersetzung",
+      "typ": "haupt"
+    },
+    {
+      "von": "uebersetzung",
+      "nach": "lokalisierung",
+      "typ": "haupt"
+    },
+    {
+      "von": "lokalisierung",
+      "nach": "lokalisierungs-entscheid",
+      "typ": "haupt"
+    },
+    {
+      "von": "lokalisierungs-entscheid",
+      "nach": "start",
+      "typ": "haupt"
+    },
+    {
+      "von": "start",
+      "nach": "bootstrap",
+      "typ": "haupt"
+    },
+    {
+      "von": "bootstrap",
+      "nach": "gesetz",
+      "typ": "haupt"
+    },
+    {
+      "von": "gesetz",
+      "nach": "bau",
+      "typ": "haupt"
+    },
+    {
+      "von": "bau",
+      "nach": "pruefer",
+      "typ": "haupt"
+    },
+    {
+      "von": "pruefer",
+      "nach": "schnitt",
+      "typ": "haupt"
+    },
+    {
+      "von": "schnitt",
+      "nach": "abnahme",
+      "typ": "haupt"
+    },
+    {
+      "von": "abnahme",
+      "nach": "faktencheck",
+      "typ": "haupt"
+    },
+    {
+      "von": "faktencheck",
+      "nach": "captions",
+      "typ": "haupt"
+    },
+    {
+      "von": "captions",
+      "nach": "capcut-push",
+      "typ": "haupt"
+    },
+    {
+      "von": "capcut-push",
+      "nach": "capcut-sichtung",
+      "typ": "haupt"
+    },
+    {
+      "von": "projekte",
+      "nach": "transkription",
+      "typ": "liest"
+    },
+    {
+      "von": "transkription",
+      "nach": "projekte",
+      "typ": "schreibt"
+    },
+    {
+      "von": "projekte",
+      "nach": "augen-check",
+      "typ": "liest"
+    },
+    {
+      "von": "augen-check",
+      "nach": "projekte",
+      "typ": "schreibt"
+    },
+    {
+      "von": "uebersetzung",
+      "nach": "projekte",
+      "typ": "schreibt"
+    },
+    {
+      "von": "lokalisierung",
+      "nach": "projekte",
+      "typ": "schreibt"
+    },
+    {
+      "von": "bootstrap",
+      "nach": "projekte",
+      "typ": "schreibt"
+    },
+    {
+      "von": "learnings",
+      "nach": "bootstrap",
+      "typ": "liest"
+    },
+    {
+      "von": "learnings",
+      "nach": "faktencheck",
+      "typ": "liest"
+    },
+    {
+      "von": "formate",
+      "nach": "gesetz",
+      "typ": "liest"
+    },
+    {
+      "von": "brand-quasi",
+      "nach": "lokalisierung",
+      "typ": "liest"
+    },
+    {
+      "von": "lokalisierung",
+      "nach": "brand-quasi",
+      "typ": "schreibt"
+    },
+    {
+      "von": "capcut-sichtung",
+      "nach": "ad-upload",
+      "typ": "haupt"
+    },
+    {
+      "von": "ad-upload",
+      "nach": "projekte",
+      "typ": "schreibt"
+    },
+    {
+      "von": "musik-gruppen",
+      "nach": "bau",
+      "typ": "liest"
+    },
+    {
+      "von": "ad-upload",
+      "nach": "ad-uploader",
+      "typ": "haupt"
+    },
+    {
+      "von": "meta-werbekonto",
+      "nach": "ad-uploader",
+      "typ": "liest"
+    },
+    {
+      "von": "ad-uploader",
+      "nach": "meta-werbekonto",
+      "typ": "schreibt"
+    },
+    {
+      "von": "clip-karte",
+      "nach": "custom-clips",
+      "typ": "haupt"
+    },
+    {
+      "von": "custom-clips",
+      "nach": "custom-pruefer",
+      "typ": "haupt"
+    },
+    {
+      "von": "custom-pruefer",
+      "nach": "custom-clips",
+      "typ": "haupt"
+    },
+    {
+      "von": "custom-pruefer",
+      "nach": "schnitt",
+      "typ": "haupt"
+    },
+    {
+      "von": "custom-clips",
+      "nach": "projekte",
+      "typ": "schreibt"
+    },
+    {
+      "von": "brand-quasi",
+      "nach": "custom-clips",
+      "typ": "liest"
+    }
+  ],
+  "notizen": [
+    "Ad-Upload als Abschluss-Knoten (Viktors Entscheid 30.07.2026): Die Kette endete bisher bei der CapCut-Sichtung, die Pipeline-Station „Gelauncht\" wurde von nichts gefüllt. Jetzt schließt tools/ad-upload/upload.py den Kreis — stumpfes Werkzeug, kluger Chat drumherum. Harte Regel: Anzeigen entstehen IMMER pausiert, Scharfschalten bleibt Handarbeit im Ads Manager.",
+    "Linien-Trennung (Viktors Entscheid 28.07.2026): Der eine vermischte Workflow (Longform-Singing-VSL-Agent) wurde in zwei brand-reine Workflows dupliziert — dieser hier ist die Quasi-Linie (Ziel-Brand QUA - Quasi). Getrennt wurden die vermischten Datenbanken: projekte → projekte-lymphoria + projekte-quasi (physisch umgezogen), und je Workflow ist nur noch SEINE Brand-DB verkabelt. Generelles Handwerk (Skills, Tools, learnings, formate) bleibt bewusst geteilt — es trägt kein Brand-Wissen. Das Original liegt in _archiv/.",
+    "Projekte-Datenbank (datenbanken/projekte) ergänzt: ein Ordner je Projekt nach Viktors Naming „Singing VSL NNN“, Karte mit Quell-Video-Hash als Doppel-Rip-Schutz, Vorstufen-Dateien (Transkript/Übersetzung/Befund/finale Copy) leben dort. Der frühere entwuerfe/-Ordner ist darin aufgegangen.",
+    "Vorstufe Video→Copy: Competitor-VSL wird transkribiert (Gemini Pro-Klasse über den workflow-eigenen Key in ~/.config/leichtkraut/.env), zeitstempel-treu übersetzt und als DACH-Befund ans Lokalisierungs-Gate gelegt — erst nach Viktors Entscheid entsteht die inbox-Copy für den Song-Flow.",
+    "Voll in AWMS-Form übernommen (2026-07-18): 66 Skills → .claude/skills/<name>/SKILL.md, Wissensspeicher als Datenbanken (learnings/clip-library/formate/styles), Tools tools/sa · cut-pauses · verify-timing. Interne Pfade des Agenten mit-umgestellt — er bleibt lauffähig.",
+    "Bewusst lose (Befund): der Generation-Flow (Frames/Clips neu, Kling CLI, Gesetz objective-timing + tools/verify-timing) und seine Skills, plus styles + clip-library (in reinem SA-Resync nicht genutzt). Lose = ehrlich, nicht vergessen.",
+    "Herkunft: github.com/WSECM/Longform-Singing-VSL-Agent. Diese Kopie ist AWMS-nativ und weicht vom GitHub-Original ab — Freund-Updates per Neu-Klonen, nicht git pull.",
+    "Gate-Korrektur (Viktors Entscheid im 007-Lauf, 2026-07-20): Maschinen-Gates (gates.py) stoppen nur den BAU (fixen/dokumentieren), nie den Lauf auf Viktor. Das Mensch-Gate am Ende ist die CapCut-Sichtung (neuer Knoten) — dort sichtet Viktor und gibt Feedback; Vmake-Schlieren sind bekannt/akzeptiert, er verdeckt sie in CapCut selbst.",
+    "Rechenort-Entscheid (Viktor, 2026-07-21): Heavy-CPU dieses Workflows (Whisper, Demucs, Renders, Kontakt-Sheets, Schlieren-Scan) läuft IMMER per SSH auf dem geteilten Hetzner-Worker — ohne Vorab-Frage, kein Lokal-Modus; APIs + Keys bleiben am Mac. Die Regel wohnt in sa-resync-singing-ad §Rechenort (kein eigener Graph-Knoten — Viktors Ansage), Whisper-Kommando: tools/sa/whisper_lauf.py. Ausdrücklich OHNE A/B-Test direkt eingeführt (Viktors Ansage im 011-Lauf: kein A/B mehr).",
+    "Augen-Check-Knoten (Viktors Ansage im 011-Lauf, 2026-07-21): Neuer Pflicht-Schritt singing-vsl-augen-check zwischen Transkription und Übersetzung — geboren aus dem Dalton-Widerspruch in 011 (Scribe hörte nineteen-five bzw. ninety-four, die eingebrannte Caption zeigt 195): Verdachtsstellen werden per Frames + Caption-Lesen entschieden, nie durch Raten.",
+    "Song-Gate entfernt (Viktors Entscheid 2026-07-21, nach validiertem 040-Testlauf): die KI wählt den Song selbst nach objektiven Kriterien (Ideal-Band Pacing 0,95–1,05, volle Coverage, keine Lücken); Runden à 5 Generierungen, Obergrenze 20, danach der Nächstbeste unter den Baubaren. Avatar-Musik-Research (sa-zielgruppen-musik-research) ist seitdem Pflicht-Schritt jedes Laufs statt Zuruf-Option. Verbleibende Mensch-Gates: Lokalisierungs-Entscheid + CapCut-Sichtung.",
+    "Prüfer-Loop eingebaut (Viktors Ansage 30.07.2026, nach V2-Tempo-Befund + Suno-Recherche): Neuer Skill-Knoten song-watch zwischen Song-Bau und Schnitt — Volldeckungs-Tempo-Prüfung (Silben/s je Fenster + Anker-kalibriertes Maschinen-Ohr) mit OP-Loop über Suno Replace-Section, bis alle Fenster bestehen. Der bisherige Bau-Knoten wurde dafür ehrlich in Song-Bau und Schnitt+Render geteilt (der Prüfer muss VOR dem Schnitt sitzen, weil jede OP den Song ändert). Flankierend im Gesetz sa-resync-singing-ad: Style-Tempo-Gesetz (Dichte-Befehle verboten), Silben-Budget 6–12/Zeile mit Atem-Zeichen, große Segmente ~2400 Z. (Ziel ≤3 Extends), absoluter Silben-Deckel 5,1/s im Hop-Tacho, [Outro]/[End]-Pflicht. Anker-Clips: tools/sa/songwatch/. Beleg-Recherche: brands/QUA - Quasi/002 SA/song/suno-recherche/.",
+    "SSH-Umzug nachgezogen (Viktors Entscheid 2026-07-25): Seit dem Server-Umzug (23.07.) IST der Server der Arbeitsplatz — der frühere „Hetzner-Worker per SSH, Keys am Mac“-Text stammte aus der Mac-Ära und war falsch geworden. Alle Rechenort-Sätze entstaubt (gesetz, vmake-clean, captions), sa-resync-singing-ad §Rechenort neu geschrieben. Neu: Ripping Sheet als software-Knoten am Kettenanfang (Quer-Verweis übers Feld „projekt“ — die Software wohnt im Stamm-Projekt) und das Feld „umgebung“:„mac“ für die einzige lokale Stelle der Kette (CapCut-Sichtung samt Übergabe); Standard-Rechenort Server bleibt unmarkiert. Der alte mac-helfer.mjs (scp vom toten CX23) ist durch den Zwischenablage-Auftrag des Sheets abgelöst.",
+    "31.07.2026: §CLIP-ZUERST eingebaut (Viktor-Freigabe nach VZ-Sichtung, 002 VZ). Neuer Knoten clip-karte; Übersetzung in Clip-Budgets; Schnitt = Block-Anker (bau_block/render_block); Speed-Band 0,8–1,2 löst 0,8–1,0 ab. NUR Viktors Linie.",
+    "01.08.2026: §BLOCK-PARENTS + §MUSIK-GRUPPEN eingebaut (Viktor-Freigabe nach 005-V2-Report). Kaskade nur noch Hybrid-Fallback; song-watch um Dichte-Raster/Pegel-Gate/Verständlichkeit ergänzt.",
+    "01.08.2026: Knoten-Namen lesbar gemacht (Viktors Befund: rohe Skill-Namen + Clip-Karte-Knoten trug kopiertes uebersetzung-Etikett); Clip-Karte hat jetzt eigenen Skill singing-vsl-clip-karte.",
+    "01.08.2026: Musik-Research aus der Hauptlinie genommen (Viktors Befund) — läuft nur noch beim Anlegen einer neuen Musik-Gruppe und schreibt in datenbanken/musik-gruppen; der Song-Bau liest die Gruppe. Hauptlinie: Bootstrap → Song-Gesetz.",
+    "Ad-Upload = Werkzeug UND Datenbank (Viktors Entscheid 02.08.2026, nach zwei AWMS-Befunden „Leere Referenz“): Der Upload ist beides. Das API-Programm tools/ad-upload/ ist ein Tool-Baustein (Knoten „Ad-Uploader“, Karte README.md); die Ziel-Daten und der Ablageort der fertigen Ads sind ein Datenbank-Baustein (Knoten „Meta-Werbekonto“, Karte datenbanken/meta-werbekonto/DATENBANK.md). Der Datenbank-Knoten zeigte vorher auf die Datei ziele.json — ein Datenbank-Baustein braucht aber einen ORDNER mit DATENBANK.md, deshalb konnte der Befund gar nicht verschwinden. Die Daten selbst bleiben unter tools/ad-upload/ziele.json liegen, damit upload.py unverändert weiterläuft; die Vertragskarte verweist darauf (Muster: styles/DATENBANK.md, deren Einträge auch woanders wohnen).",
+    "Ein-Prompt als Lauf-Abschluss (Viktors Ansage 03.08.2026, nach dem 009-Lauf): Jeder Lauf dieser Linie endet mit dem kopierfertigen Mac-Prompt im Chat, nicht mit einem Datei-Hinweis. Dazu die Pfad-Regel: rsync- und touch-Zeile zeigen immer auf die AX41-Werkstatt, nie auf einen Cloud-Worker — dessen Server ist Minuten später gelöscht. Beleg: im 009-Lauf trug der erzeugte Prompt die Worker-IP 77.42.73.144.",
+    "Musik-Research ist in den eigenen Workflow „Musikgruppen-Erstellung\" umgezogen (Viktors Entscheid). Er war der einzige Knoten dieser Kette ohne Haupt-Kante und lief ausdrücklich nicht je Ad — ein Fremdkörper in einer Pro-Ad-Kette. Die Datenbank musik-gruppen bleibt hier und wird gelesen.",
+    "05.08.2026: Vmake an die Vorstufe verschoben (Viktors Entscheid im 018-Lauf, auf Empfehlung der KI): neue Haupt-Kette augen-check → vmake-clean → clip-karte; faktencheck → captions direkt. Grund: Clip-Karte zerlegt die bereinigte Quelle, Inpaint-Qualität auf glatter Quelle gemessen besser, Vmake-Stunde läuft parallel zur Gate-Wartezeit, ein Quell-Lauf deckt alle Re-Renders. Die alte Position stammte aus der Render-Bereinigungs-Ära (vor dem Standing-Entscheid 24.07.). OFFENER FOLGE-PUNKT (nur Befund, kein Entscheid): Das Clip-Karte-Werkzeug clip_karte<NNN>.py lebt im _pipeline-Ordner, den erst der Bootstrap anlegt — faktisch läuft der Ordner-Teil des Bootstraps darum schon vor der Clip-Karte (016- und 018-Lauf), die finale Copy kommt weiter erst nach dem Gate als script.md nach. Der Graph zeigt bootstrap unverändert nach dem Gate.",
+    {
+      "titel": "Custom-Clip-Strecke",
+      "text": "Clip-Karte markiert Produkt-Clips (custom_clips.json) -> Custom-Clip-Production baut Areum-Ersatzclips (NB2-Edit + Kling-Kette + Tempo-Fit) -> Custom-Clip-Pruefer kontrolliert Handlungs-Inventar im Loop. Viktors Gesetze: IMMER Start+End-Frame, NIE schneiden (Tempo-Anpassung), jede Handlung muss zu Ende gefuehrt werden (Laecheln endet als Laecheln, Zeigegeste kommt an). Skill: .claude/skills/custom-clip-production/SKILL.md"
+    }
+  ]
+}
