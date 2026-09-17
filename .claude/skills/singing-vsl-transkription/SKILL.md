@@ -3,12 +3,13 @@ name: singing-vsl-transkription
 description: Ein Competitor-VSL-Video (MP4 im Chat) über ElevenLabs Scribe in ein englisches Transkript mit zeitachsen-treuen (M:SS)-Stempeln verwandeln — erster Schritt der Singing-VSL-Vorstufe, liefert die Vorlage für singing-vsl-uebersetzung. Nutzen, wenn Viktor ein US-Ad-Video reinwirft und die Singing-VSL-Kette starten will: „transkribier das", „Singing VSL", „Scribe", „mach das Transkript mit Zeitstempeln", „neues Projekt" plus Video. Nicht verwechseln mit ad-transkription im AWMS-Hauptprojekt (Competitor Ripping, ohne Zeitstempel).
 ---
 
-**`<projekte-db>`** steht in diesem Skill für die Projekte-Datenbank der
-Linie: `datenbanken/projekte-lymphoria` (Ziel-Brand LEI - Leichtkraut) oder
-`datenbanken/projekte-quasi` (Ziel-Brand QUA - Quasi). Der Rip-Auftrag nennt
-den Ordner ausdrücklich; fehlt er, entscheidet die Ziel-Brand des Projekts.
-`datenbanken/projekte` (ohne Zusatz) ist eingefrorener Alt-Bestand — dort
-entsteht nie ein neues Projekt.
+**`<projekte-db>`** steht in diesem Skill für die Projekte-Datenbank der LINIE, die
+dieser Lauf fährt. Aufgelöst wird sie über die Registry `datenbanken/linien/linien.json`
+(Feld `projektDb` der Zeile, z. B. `datenbanken/projekte-rovina`); welche Linie gilt, sagt
+der Rip-Auftrag, sonst Viktor am Trigger. Nie aus Gewohnheit die Quasi-Linie annehmen —
+es entscheidet die Quell-Brand des Videos (Packshot, Marke im Bild, Page-Farm-Register
+der Brand-DBs). `datenbanken/projekte` (ohne Zusatz) ist eingefrorener Alt-Bestand —
+dort entsteht nie ein neues Projekt.
 
 # Singing VSL Transkription
 
@@ -31,9 +32,10 @@ stehen in `DECISIONS.md`.
   Abschnitt „Naming"). Vorrang: (1) Viktors Zuruf gilt immer · (2) sonst der
   Name aus dem Ripping-Sheet-Auftrag (erste Zeile „Projekt: …") EXAKT
   übernehmen · (3) sonst selbst vergeben: Brand-Kürzel bestimmen, nächste
-  freie Nummer DIESES Kürzels aus `<projekte-db>/` ablesen (Ordner
-  anderer Muster zählen nicht mit), Datum von heute anhängen — und den Namen
-  im Chat ansagen.
+  freie Nummer DIESES Kürzels nach `<projekte-db>/DATENBANK.md` §Naming
+  bestimmen (frei sein muss sie in der Datenbank UND unter `brands/<Kürzel - Name>/`;
+  Ordner anderer Muster zählen nicht mit), Datum von heute anhängen — und den
+  Namen im Chat ansagen.
 - Die Brand: der passende Ordnername aus `brands/` (erkennbar an Marke im
   Video/Dateinamen); ist sie nicht eindeutig, zusammen mit dem Projektnamen
   bei Viktor erfragen.

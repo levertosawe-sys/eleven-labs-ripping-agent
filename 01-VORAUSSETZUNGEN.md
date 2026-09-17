@@ -15,6 +15,7 @@ Empfängers; die Schlüssel wohnen in einer eigenen `.env`-Datei außerhalb jede
 | `ffmpeg` + `ffprobe` | Messen, Zerlegen, Schneiden, Rendern | `ffmpeg -version` |
 | Python 3.10+ (venv empfohlen) | Werkzeug-Skripte | `python3 --version` |
 | `zip`/`rsync` | Übergabe-Pakete | `rsync --version` |
+| Python-Pakete `numpy`, `opencv-python` | Lip-Sync (Gesichter, Blitze, Farbstich) | `python3 -c "import cv2, numpy"` |
 | CapCut auf dem Rechner des MENSCHEN | End-Montage + Sichtung | — |
 
 ## 2. Konten & Schlüssel
@@ -22,7 +23,7 @@ Empfängers; die Schlüssel wohnen in einer eigenen `.env`-Datei außerhalb jede
 | Dienst | Wofür in dieser Kette | Pflicht? |
 |---|---|---|
 | **ElevenLabs** | Scribe-Transkript der Quelle · Sprechspur (Text-zu-Stimme, liefert Wort-Zeitstempel mit) · Stimm-Casting (Voice Design) | **Ja — das Herz der Linie** |
-| **kie.ai** | Maschinen-Ohr (Gemini) für Prüfer/Abnahme · Vocal-Removal fürs Musikbett (Weg A) · optional Suno fürs Musikbett (Weg B) · Kling für Custom Clips | **Ja** |
+| **kie.ai** | Maschinen-Ohr (Gemini) für Prüfer/Abnahme · Vocal-Removal fürs Musikbett (Weg A) · optional Suno fürs Musikbett (Weg B) · Kling für Custom Clips · Lip-Sync (`volcengine/video-to-video-lip-sync`, 8 Credits je volle Sekunde) | **Ja** |
 | **Vmake** | eingebrannte Quell-Captions entfernen | Nur wenn die Quelle eingebrannte Captions hat (meist ja) |
 | **Meta Marketing API** | Upload der fertigen Ad (immer pausiert) | Nur fürs letzte Glied — ohne endet der Lauf mit der fertigen MP4 |
 

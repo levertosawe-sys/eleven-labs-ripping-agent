@@ -3,12 +3,13 @@ name: singing-vsl-augen-check
 description: "Verdachtsstellen eines frischen EN-Transkripts per Augen-Beweis gegen die eingebrannten Original-Captions des Quellvideos klären — Widersprüche, Zahlen-/Namens-Garbles und Abweichungen von früheren Ads derselben Brand werden durch Anschauen entschieden, nie durch Raten (/watch-Prinzip: Frames ums Zeitfenster ziehen, Caption lesen). Pflicht-Schritt der Singing-VSL-Kette zwischen Transkription und Übersetzung; auch nutzen, wenn Viktor sagt „check das im Video nach", „schau dir die Stelle an", „was sagen die Untertitel", „da widerspricht sich was im Transkript", „ist das wirklich so gesagt worden?"."
 ---
 
-**`<projekte-db>`** steht in diesem Skill für die Projekte-Datenbank der
-Linie: `datenbanken/projekte-lymphoria` (Ziel-Brand LEI - Leichtkraut) oder
-`datenbanken/projekte-quasi` (Ziel-Brand QUA - Quasi). Der Rip-Auftrag nennt
-den Ordner ausdrücklich; fehlt er, entscheidet die Ziel-Brand des Projekts.
-`datenbanken/projekte` (ohne Zusatz) ist eingefrorener Alt-Bestand — dort
-entsteht nie ein neues Projekt.
+**`<projekte-db>`** steht in diesem Skill für die Projekte-Datenbank der LINIE, die
+dieser Lauf fährt. Aufgelöst wird sie über die Registry `datenbanken/linien/linien.json`
+(Feld `projektDb` der Zeile, z. B. `datenbanken/projekte-rovina`); welche Linie gilt, sagt
+der Rip-Auftrag, sonst Viktor am Trigger. Nie aus Gewohnheit die Quasi-Linie annehmen —
+es entscheidet die Quell-Brand des Videos (Packshot, Marke im Bild, Page-Farm-Register
+der Brand-DBs). `datenbanken/projekte` (ohne Zusatz) ist eingefrorener Alt-Bestand —
+dort entsteht nie ein neues Projekt.
 
 # Singing VSL Augen-Check — Captions schlagen Raten
 
@@ -89,12 +90,25 @@ Zeile „Augen-Check: keine Verdachtsstellen" und der Schritt ist fertig.
    für FAKTEN, nicht für die Fensterlage.
 2. **Frames ziehen** (das /watch-Prinzip, gezielt; eine Handvoll Einzel-Frames
    ist I/O-Arbeit und läuft lokal — Rechenort-Regel:
-   `.claude/skills/sa-resync-singing-ad/SKILL.md` §Rechenort):
+   `.claude/skills/sa-resync-singing-ad/SKILL.md` §Rechenort).
+   **Wer viele Frames zieht und liest, tut das in einem Subagenten:** Ab etwa einem
+   Dutzend Bildern je Lauf gehören Ziehen und Ablesen in einen eigenen Agenten, der
+   die abgelesenen Captions als Text zurückgibt — der Hauptlauf entscheidet damit,
+   ohne die Bilder selbst zu tragen. Das ist reine Beweis-Sammlung: Die Caption sagt,
+   was sie sagt, da ist nichts zu urteilen. Grund und Ausnahmen: Grundsatz P5 in
+   `.claude/skills/brand-swipe-start/references/swipe-dateien.md`. Bei einer
+   Verdachtsstelle mit zwei, drei Frames lohnt der Agent nicht — dann selbst ansehen.
    ```bash
    ffmpeg -y -v error -ss <fensterstart-sekunden> -t 6 -i "<quellvideo>" -vf "fps=1,scale=640:-1" "/tmp/augencheck_<m-ss>_%02d.jpg"
    ```
-   1 Bild/s reicht, weil Captions sekundenlang stehen; 640 px Breite reicht zum
-   Lesen. `<m-ss>` = Stempel mit Bindestrich (z. B. `2-48`). Bricht ffmpeg ab
+   640 px Breite reicht zum Lesen, `<m-ss>` = Stempel mit Bindestrich (z. B. `2-48`).
+   **Das Raster hängt an der Caption-Art:** Stehende Captions (ganze Zeile,
+   sekundenlang sichtbar) erwischt `fps=1` sicher. Trägt die Quelle eine
+   KARAOKE-Wortspur — ein einzelnes Wort je Karte, das im Takt des Gesprochenen
+   wechselt —, steht jede Karte nur rund 0,3 s: dort mit `fps=5` ziehen, sonst trifft
+   das Raster das strittige Wort nur zufällig. Welche Art vorliegt, zeigt der erste
+   gezogene Frame; danach gilt dasselbe Raster für alle weiteren Fenster.
+   Bricht ffmpeg ab
    oder entstehen 0 Frames → Meldung wörtlich zeigen, Pfad und Stempel prüfen
    (Stempel jenseits der Videolänge?), einmal korrigiert erneut versuchen;
    scheitert auch das → Stelle „ungeklärt" + Befund an Viktor.

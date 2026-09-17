@@ -82,7 +82,7 @@ Ein Mini-Test ohne einen einzigen API-Call:
 
 ```bash
 # 1. Workflow-Datei lesbar und vollständig?
-python3 -c "import json; d=json.load(open('workflows/Longform-Speaking-VSL-Quasi.json')); print(d['name'], '·', len(d['knoten']), 'Knoten')"
+python3 -c "import json; d=json.load(open('workflows/eleven-labs-ripping-agent.json')); print(d['name'], '·', len(d['knoten']), 'Knoten')"
 
 # 2. Sind die Pflicht-Skills da?
 ls .claude/skills/execute/SKILL.md .claude/skills/singing-vsl-transkription/SKILL.md

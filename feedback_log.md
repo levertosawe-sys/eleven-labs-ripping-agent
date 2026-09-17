@@ -91,3 +91,29 @@ Stimmen-Register, Casting laeuft nie wieder fuer dieselbe Marke.
 Ergebnis: Juli – German, 30,8 % (Matilda 24,7 %).
 Geaendert: `.claude/skills/speaking-vsl-stimm-casting/SKILL.md` (NEU),
 `datenbanken/stimmen/` (NEU), `workflows/eleven-labs-ripping-agent.json`
+
+## 2026-09-17
+
+**1 · „Das Lip-Sync ist gut geworden … bei dem Hund musst du kein Lip-Sync machen, nur bei der UGC … nur immer Lip-Sync für Menschen machen … mach einfach Lip-Sync als Baustein"**
+Diagnose: Im Lauf RAN 001 EL lief der Lip-Sync als Einschub neben der Kette; der Workflow kannte
+keinen Knoten dafür. Drei Fehler dieses Laufs wären in jedem neuen Lauf wiedergekommen:
+(1) Farbblitze und Schwarz-/Weißblenden im Lip-Sync-Eingang → 8 von 32 Clips mit hautfarbenem Block
+im Untergesicht und Farbschleier über den ganzen Clip (Farbstich 20–28, sauber ≈ 1);
+(2) sprechende 3D-Hunde gelippt → graue, verwaschene Nase, unscharfe Schnauze, doppelte Flasche;
+(3) kie-Ausgabe ohne Farbkennzeichnung → ffmpeg las bt601 statt bt709 (YUV unverändert, U/V-Abweichung
+< 0,1), Hauttöne verschoben (Farbstich Ø 3,63 → 1,00 nach Übertragen der Kennzeichnung, bitgleich).
+Prinzip: Lip-Sync ist ein Werkzeug für sichtbar sprechende Menschen; was der Eingang an Nicht-Gesicht
+mitbringt (Blitze, Blenden, Figuren) und was die Ausgabe an Metadaten verliert, wird vor dem Einbau
+abgefangen — gemessen, nicht erhofft. Die Mund-Ton-Korrelation beweist nichts, die Sichtprüfung schon.
+Geändert: `.claude/skills/speaking-vsl-lipsync/` (neu, 6 Skripte; der Blitz-Erkenner fand am Lauf alle
+8 Stellen, die zuvor von Hand repariert wurden) · `workflows/eleven-labs-ripping-agent.json` (Knoten
+`lip-sync` zwischen Audio-Prüfung und Schnitt, Startfrage am Trigger) · `datenbanken/sp-learnings/learnings.md`
+(35–38) · `03-FALLEN-UND-TRICKS.md` · `02-ANLEITUNG-KNOTEN-FUER-KNOTEN.md` (D0).
+
+**2 · Nachprüfung nach dem Lip-Sync-Farbfix: Farbstich im fertigen Bild stieg von 2,4 auf 5,1, auch am sauberen Clip**
+Diagnose: Die Bildmontage schrieb RGB mit nur bt709-Tags — ffmpeg rechnet dann bt601. Vorher hob die unkennzeichnete kie-Ausgabe
+das auf. Hin-/Rückweg gemessen: nur Tags → gelber Blitz Rot +2,0 / Blau −4,5; mit `out_color_matrix=bt709` neutral; Lesen ohne
+`accurate_rnd` −2 Stufen.
+Prinzip: Kennzeichnung ist Metadatum, Umrechnung ist Rechnung — beides muss stimmen; nach jedem Farb-Fix die ganze Kette messen.
+Geändert: `.claude/skills/speaking-vsl-lipsync/scripts/lipsync_einbau.py`, `lipsync_farbe.py` · `datenbanken/sp-learnings/learnings.md` (39) · `03-FALLEN-UND-TRICKS.md`.
+

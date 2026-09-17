@@ -1,10 +1,10 @@
 # Die Kette, Knoten für Knoten
 
-Legende: **[GEBAUT]** Skill/Werkzeug liegt in `skills/` bei · **[GEIST]** noch zu bauen
+Legende: **[GEBAUT]** Skill/Werkzeug liegt unter `.claude/skills/` bzw. `tools/` bei · **[GEIST]** noch zu bauen
 (Soll-Verhalten hier + in der Workflow-Datei; Erbgut in `referenz/`) · **[GATE]** der
 Mensch entscheidet · **[TRIGGER]** hier startet etwas.
 
-Die Workflow-Datei `workflow/Longform-Speaking-VSL-Quasi.json` ist die Wahrheit; diese
+Die Workflow-Datei `workflows/eleven-labs-ripping-agent.json` ist die Wahrheit; diese
 Anleitung erzählt sie in Prosa.
 
 ---
@@ -38,7 +38,7 @@ eigenen Augen beschreiben; EN-Text je Clip, Typ-Einordnung, Übergangs-Flags. Zu
 jeden Clip markieren, der das fremde Produkt zeigt → `custom_clips.json` (Eingabe der
 Etappe P). Die Karte ist Pflicht-Eingabe der Übersetzung.
 
-**A6 · Übersetzung in Sprech-Budgets [GEIST]** — Soll:
+**A6 · Übersetzung in Sprech-Budgets [GEBAUT]** — `.claude/skills/speaking-vsl-uebersetzung/` · Soll beim Bau:
 Übersetzen IN die Clip-Zeitfenster: jede Zeile an ihre Clips gebunden (Format
 `Cxxx–Cyyy | Zeile`), Budget = SPRECHZEIT der Zielsprache im Fenster. Deutsch läuft
 gesprochen ~20–30 % länger als Englisch — kürzen gehört zum Handwerk, das
@@ -63,13 +63,13 @@ Erst danach wird Freigegebenes eingearbeitet und die finale Copy mit dem Quellvi
 
 ## Etappe B — Die Brand-Stimme (einmal je Brand, dann nie wieder)
 
-**B1 · Projekt-Bootstrap [GEIST]** — Soll (unter `tools/sp/`):
+**B1 · Projekt-Bootstrap [GEBAUT]** — `tools/sp/new_sp_project.py` · Soll beim Bau:
 Pipeline-Ordner anlegen, Copy+Video aus `inbox/` holen, Quelle MESSEN (Frames/fps/Dauer
 per ffprobe), Konstanten in `_pipeline/sp_config.json` schreiben, Pipeline des neuesten
 SP-Projekts portieren. Bekannte Falle beim Portieren: Projektnummern-Ersatz darf keine
 Zahlen-Literale in Skripten verstümmeln — nach jedem Port prüfen.
 
-**B2 · Stimm-Casting [GEIST]** — Soll:
+**B2 · Stimm-Casting [GEBAUT]** — `.claude/skills/speaking-vsl-stimm-casting/` · Soll beim Bau:
 Läuft NUR, wenn das Stimmen-Register für die Brand leer ist. 3–5 Stimm-Kandidaten
 (ElevenLabs Voice Design — Ausgangs-Baustein liegt bei:
 `referenz/voiceover-narrator-voice-design-prompt/` — oder Library-Stimme) sprechen
@@ -85,7 +85,7 @@ Ab dann überspringen alle Läufe dieser Brand die Etappe B2/B3 komplett.
 
 ## Etappe C — Die Sprechspur (der Kern-Tausch gegenüber der Singing-Schwester)
 
-**C1 · Sprechspur-Bau [GEIST]** — Soll (unter `tools/sp/`):
+**C1 · Sprechspur-Bau [GEBAUT]** — `tools/sp/sprechspur.py` · Soll beim Bau:
 Die Copy absatzweise einsprechen lassen (Kontext-Verkettung, damit Ton und Energie über
 Absatzgrenzen halten), je Absatz mehrere Takes; Wahl objektiv: Take muss ins Zeit-Band
 seiner SOLL-Fenster passen, dann Maschinen-Ohr. Werkzeuge der Stimme: Betonungs-/
@@ -95,7 +95,7 @@ Master, wird nie mehr angefasst.** Riesiger Vorteil dieser Linie: die Text-zu-St
 liefert die WORT-ZEITSTEMPEL GRATIS mit — der Wort-Cache entsteht beim Bau; kein
 Demucs, kein Forced Alignment.
 
-**C2 · sprech-watch, der Prüfer-Loop [GEIST]** — Soll:
+**C2 · sprech-watch, der Prüfer-Loop [GEBAUT]** — `.claude/skills/sprech-watch/` + `tools/sp/pruefer.py` · Soll beim Bau:
 JEDE Zeile abhören (Anker-kalibriertes Maschinen-Ohr — nur Modelle, die an validierten
 Referenz-Clips bestanden haben, dürfen urteilen): Aussprache von Zahlen/Namen/Garantie,
 Hänger, Doppelwörter, Artefakte, Tempo je Fenster. Rote Zeile → NUR diese Zeile neu
@@ -103,7 +103,7 @@ würfeln und einsetzen (bei Text-zu-Stimme billig). Loop bis alles grün ist ode
 Zone nach 3 Versuchen als benannter Trade-off dokumentiert wird. Erst dann ist die Spur
 fürs Schneiden frei. Maschinen-Befunde stoppen den BAU, nie den Lauf auf den Menschen.
 
-**C3 · Musikbett [GEIST]** — Soll:
+**C3 · Musikbett [GEBAUT]** — `.claude/skills/speaking-vsl-musikbett/` + `tools/sp/bett_pegel.py` · Soll beim Bau:
 Eine nackte Sprechstimme klingt tot (die Singing-Schwester hatte das Problem nie — dort
 IST der Song die Musik). Zwei Wege, Betreiber-Entscheid: **(a)** Instrumental der
 QUELLE per Vocal-Removal ziehen — Stimmung + Dramaturgie-Timing gratis 1:1;
@@ -115,14 +115,24 @@ Sprechspur bleibt Master.
 
 ## Etappe D — Bild auf Stimme
 
-**D1 · Schnitt + Render [GEIST]** — Soll (unter `tools/sp/`, Erbgut: Block-Anker-Schnitt
+**D0 · Lip-Sync, nur Menschen [GEBAUT]** — `.claude/skills/speaking-vsl-lipsync/`
+Spricht in der Quelle ein Mensch sichtbar in die Kamera (UGC, Ärztin, Presenter), bekommt er
+nach der Audio-Prüfung einen deutschen Mund: kie.ai `volcengine/video-to-video-lip-sync` nur auf
+den Frames mit frontalem Gesicht, alles andere bleibt Original mit der Stimme darüber. Die Frage
+stellt der Agent am Start, nachdem er gemessen hat, ob überhaupt ein Mensch im Bild spricht.
+Tiere, Cartoon- und 3D-Figuren bekommen nie einen Lip-Sync. Farbblitze und Blenden schneidet das
+Skript aus den Aufträgen, die kie-Ausgabe bekommt die Farbkennzeichnung des Eingangs zurück, eine
+Sichtprüfung Ein- gegen Ausgang entscheidet. Kosten: 8 kie-Credits je volle Sekunde. Ausgabe:
+Einbau-Liste für die Bildmontage oder `_work/bild_lipsync.mp4`, das D1 rendert.
+
+**D1 · Schnitt + Render [GEBAUT]** — `tools/sp/render.py` · Soll beim Bau (Erbgut: Block-Anker-Schnitt
 der Schwester): Zeilen-Fenster aus dem Wort-Cache → Original-Clips hart an die Stimme
 schneiden (moderates Tempo-Band je Clip, Region-Pooling, Verlust-Gate: kein Clip fällt
 stumm) → Render mit Musikbett-Mischung. Nach jeder sprech-watch-Operation läuft dieser
 Schritt zwingend NEU. Achtung: Sprechzeit ≠ Wanduhr — beim Rechnen gegen Clip-Fenster
 immer die Wanduhr-Zeit des Videos nehmen.
 
-**D2 · Abnahme: Zeile↔Clip-Kreuzcheck [GEIST]** — Soll (unter `tools/sp/`):
+**D2 · Abnahme: Zeile↔Clip-Kreuzcheck [GEBAUT]** — `tools/sp/abnahme.py` · Soll beim Bau:
 Liegt jede gesprochene Zeile wirklich auf IHREM Original-Bild? Wörter aus dem Wort-Cache
 gegen die Clip-Beschreibungen der Clip-Karte halten; Beweis-Frames an allen Stellen des
 Abweichungs-Protokolls; Kontakt-Sheets über die volle Länge; Audio-Vollabgleich
@@ -137,7 +147,7 @@ Fund → Ursache liegt 1–3 Schritte zurück.
 
 ## Etappe E — Übergabe an den Menschen
 
-**E1 · Captions [GEIST]** — Soll:
+**E1 · Captions [GEBAUT]** — `.claude/skills/speaking-vsl-captions/` · Soll beim Bau:
 Caption-Häppchen (1–4 Wörter, max. 26 Zeichen, keine Satzzeichen) mit
 Karaoke-Wort-Timings — direkt aus dem Wort-Cache des Sprechspur-Baus, ohne Umwege.
 Dann das Übergabe-Paket schnüren. Zwei geerbte Gesetze gelten wörtlich:

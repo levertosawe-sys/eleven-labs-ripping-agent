@@ -96,11 +96,11 @@ def _log_usage(audio_s: float) -> None:
         pass
 
 
-def _scribe(key: str, clip: Path) -> dict:
+def _scribe(key: str, clip: Path, sprache: str = "en") -> dict:
     """Ein Scribe-Call, Multipart über die Standardbibliothek.
     3 Versuche mit Backoff bei 429/5xx/Netz; andere 4xx = harter Fehler."""
     grenze = uuid.uuid4().hex
-    felder = {"model_id": MODELL, "language_code": "en",
+    felder = {"model_id": MODELL, "language_code": sprache,
               "timestamps_granularity": "word", "tag_audio_events": "false"}
     teile = []
     for k, v in felder.items():
@@ -204,6 +204,7 @@ def main() -> None:
     parser.add_argument("--bloecke", help="optional: Transkript-Bloecke als Markdown hierhin")
     parser.add_argument("--start", type=float, help="Fenster-Modus: Startsekunde")
     parser.add_argument("--dauer", type=float, help="Fenster-Modus: Laenge in Sekunden")
+    parser.add_argument("--sprache", default="en", help="Sprachcode fuer Scribe (Default en; de fuer den Wort-Cache der Sprechspur)")
     args = parser.parse_args()
 
     key = _env_wert("ELEVENLABS_API_KEY")
@@ -227,7 +228,7 @@ def main() -> None:
                 "-b:a", "64k", str(clip))
         audio_s = _dauer(clip)
         print(f"[transkription] Scribe-Call ({audio_s:.0f}s Audio)…", file=sys.stderr)
-        antwort = _scribe(key, clip)
+        antwort = _scribe(key, clip, args.sprache)
 
     versatz = args.start or 0.0
     woerter = _woerter(antwort, versatz)

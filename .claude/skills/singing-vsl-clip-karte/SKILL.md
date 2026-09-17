@@ -33,6 +33,24 @@ Skill ist die Schritt-Regie, das Gesetz die einzige Regel-Quelle.
    Das merge bricht ab, wenn auch nur ein Clip ohne Beschreibung bleibt — jede
    Original-Szene braucht Augen, sonst beginnt hier das stumme Wegwerfen.
 
+4. **Produkt-Clips markieren — nur bei Linien mit `customClips: true`**
+   (Feld des Linien-Eintrags in `datenbanken/linien/linien.json`; steht dort
+   `false`, entfällt dieser Schritt ersatzlos):
+   Beim Beschreiben jeden Clip vormerken, in dem das Produkt oder seine Verpackung
+   sichtbar ist, und die Treffer nach `_work/clips/custom_clips.json` schreiben —
+   je Zeile ein Clip:
+
+   ```json
+   {"clip": 285, "t0": 570.08, "t1": 572.17, "dauer": 2.08, "form": "sachet", "grund": "Sachet frontal in die Kamera, Logo gross lesbar", "prioritaet": "muss"}
+   ```
+
+   `form` = die Produktform laut `produkt-steckbrief.md` der Brand-DB dieser Linie,
+   sonst `screen` (Produkt auf einem Bildschirm) oder `sonstiges`.
+   `prioritaet`: `muss` = die Marke ist im Klartext lesbar, `kann` = Verpackung
+   erkennbar, aber ohne lesbaren Schriftzug.
+   Diese Datei ist die Eingabe von `.claude/skills/custom-clip-production` — ohne
+   sie beginnt die Custom-Clip-Strecke mit Raten.
+
 ## Ausgabe & Übergabe
 
 `_pipeline/clip_karte.json` — je Clip: `clip, t0, t1, dauer, en, bild, typ,

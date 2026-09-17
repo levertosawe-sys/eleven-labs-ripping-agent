@@ -16,15 +16,15 @@
       "projekt": "business",
       "ref": "software/ripping-sheet",
       "name": "Ripping Sheet",
-      "beschreibung": "Der echte Anfang der Kette, identisch zur Singing-Linie: Viktor sichtet Competitor-Ads im Ripping Sheet und klickt ⚡ Let's Rip — das Sheet vergibt den Projektnamen („KÜRZEL NNN | DATUM“), setzt die Pipeline auf „Gestartet“ und legt den fertigen Auftrag in die Zwischenablage. NEU an dieser Linie: In Frage kommt jede GESPROCHENE Longform-VSL — der Trichter ist um ein Vielfaches breiter als der harte Singing-Erkenner (Cartoon+Gesang+Englisch), der unverändert nur für die Suno-Linie gilt. Die Auswahl bleibt Viktors Klick, kein Auto-Erkenner.",
-      "nutzung": "im Browser: rippingsheet.kaetzchenwohl.de → ⚡ Let's Rip"
+      "beschreibung": "Der Anfang der Kette (Viktors Entscheid 02.09.2026 — hebt den Runde-2-Stand „das Sheet gehört ihr nicht“ auf): Viktor sichtet Competitor-Ads im Ripping Sheet, klickt ⚡ Let's Rip und wählt im Dialog ZUERST den Agenten „🎙 Eleven Labs“ (statt des Singing-Agenten), dann die Ziel-Brand. Das Sheet liest dafür das Brand-Adressbuch datenbanken/sp-brands/daten.csv (Spalte quell_brands = erlaubte Quell-Bibliotheken), vergibt den Projektnamen „KÜRZEL NNN EL | DATUM“ (Ketten-Kürzel EL = Eleven Labs, EIGENE Nummern-Serie — Viktors Ansage 02.09.2026), legt das Video in inbox/ und liefert den Auftragstext (Workflow-Datei, Projekte-DB sp-projekte, Pipeline-Ordner NNN EL, Custom-Clip-Wahl, keine Musik-Wahl). Die Pipeline-Ansicht des Sheets liest sp-projekte und die NNN-SP-Ordner mit; die Datei quelle-<meta-ad-id>.md im Projekt-Ordner ist Pflicht, sonst bleibt der Auftrag ewig offen.",
+      "nutzung": "im Browser: rippingsheet.kaetzchenwohl.de → ⚡ Let's Rip → Agent „🎙 Eleven Labs“"
     },
     {
       "id": "vsl-video",
       "typ": "trigger",
-      "name": "Competitor-VSL (MP4)",
-      "beschreibung": "Der Auftrag aus dem Ripping Sheet nennt den Server-Pfad des Videos — die KI kopiert es in die Agent-Inbox, nichts verlässt den Server. Projektname kommt fertig aus dem Auftrag; Hand-Weg ohne Sheet bleibt möglich (MP4 in den Chat). Vor der Anlage wird der Quell-Hash gegen die Projekte-Datenbank geprüft: schon verarbeitet → STOPP, kein Doppel-Rip. Alles wörtlich wie in der Singing-Linie.",
-      "nutzung": "im Chat: Auftrag aus dem Sheet einfügen (oder MP4 reinziehen)"
+      "name": "Competitor-VSL (MP4 von Viktor)",
+      "beschreibung": "Zwei Einstiege (seit 02.09.2026): (1) SHEET-WEG — der Auftrag aus dem Ripping Sheet nennt Projektname, Inbox-Pfad des Videos, Ziel-Brand-Kürzel und die Custom-Clip-Wahl; Name und Kürzel gelten, nichts wird neu gewürfelt. (2) HAND-WEG — Viktor wirft eine gesprochene Competitor-VSL in UPLOAD/ oder in den Chat; dann Ziel-Brand bestimmen (Packshot/Marke im Video, im Zweifel Viktor fragen) und die nächste freie Nummer ziehen. In beiden Fällen: die Zeile der Brand im Brand-Adressbuch datenbanken/sp-brands lesen (Sprache, brand_db, custom_clips; fehlt die Zeile: mit Viktor anlegen), dann Doppel-Rip-Schutz: Quell-Hash gegen ALLE Projekt-Datenbanken greppen — Treffer = STOPP. NAME: „KÜRZEL NNN EL | DATUM“ (Ketten-Kürzel EL, eigene Nummern-Serie: dass es dieselbe Nummer ohne EL in der Suno-Kette gibt, ist kein Konflikt). Projekt-Anlage nach datenbanken/sp-projekte/DATENBANK.md. ZIEL-PRODUKT (07.09.2026): Der Sheet-Auftrag nennt das Produkt der Ziel-Brand, für das gebaut wird (Zeile „🧴 PRODUKT“); im Hand-Weg nennt es Viktor. Es wandert als „ziel-produkt:“ in die karte.md und wird am Knoten produkt-abgleich gegen die Quelle gehalten. LIP-SYNC-FRAGE (Viktor 17.09.2026): Beim Trigger den Vorbefund messen (python3 .claude/skills/speaking-vsl-lipsync/scripts/lipsync_bereiche.py --vorbefund <Quelle>); spricht ein Mensch sichtbar (ab 3 s frontales Gesicht), Viktor zusammen mit den übrigen Startfragen per Frage-Werkzeug fragen, ob Lip-Sync eingebaut wird — Antwort als lip-sync: in die karte.md. Kein Mensch im Bild → nicht fragen, lip-sync: entfällt.",
+      "nutzung": "⚡-Auftrag aus dem Sheet (nennt Agent + Brand) — oder im Chat: MP4 + „rip das“"
     },
     {
       "id": "transkription",
@@ -45,6 +45,14 @@
       "nutzung": "läuft automatisch nach der Transkription"
     },
     {
+      "id": "produkt-abgleich",
+      "typ": "gate",
+      "name": "Produkt-Abgleich",
+      "bedingung": "karte.md: quell-produkt ≠ ziel-produkt (Produktart/Mechanik) — bei Gleichheit läuft der Knoten still durch",
+      "nutzung": "im Chat: „weiter“ / „abbrechen“",
+      "beschreibung": "Viktors Ansage 07.09.2026 (Befund ARE 007 EL: die Quasi-Quelle bewarb einen Augen-Balsam-Stick, Areum führt nur die Kollagen-Maske — aufgefallen erst am Transkript, nach Server-Buchung und Scribe-Credits): Der Auftrag aus dem Sheet nennt das ZIEL-PRODUKT (Rip-Dialog, Liste aus der Registry, Feld produkte). Direkt nach dem Augen-Check — VOR Vmake, Clip-Karte und jeder weiteren kostenpflichtigen Stufe — bestimmt die KI das in der Quelle beworbene Produkt (Copy: Produktname, Produktart, Anwendung, Mechanik; Bild: Packshot) und schreibt beide in die karte.md: „ziel-produkt: <aus dem Auftrag>“ und „quell-produkt: <aus der Quelle>“. Gleiche Produktart und Mechanik (Maske ↔ Maske, auch bei anderem Namen) → das Gate ist still: eine Zeile im Chat, weiter. Andere Produktart (Stick ↔ Maske, Kapsel ↔ Creme) → STOPP mit Warnung: Quell-Produkt, Ziel-Produkt, Belegstellen (Zeitstempel + Packshot-Fenster) und was eine Fortsetzung bedeutet (freie Adaption statt 1:1-Rip, Custom Clips müssten die Produktform tauschen). Viktor entscheidet: „weiter“ (Vermerk in der Karte, Übersetzung adaptiert auf das Ziel-Produkt) oder „abbrechen“ — dann Projekt-Ordner löschen (Worker UND Werkstatt), Auftrag aus der Bündel-Datei nehmen, Pipeline-Marker der Ad zurücksetzen (rip.json der Ad ohne pipeline), damit Sheet und Ad-Library-Brille die Ad wieder als frisch zeigen. HAND-WEG: das Ziel-Produkt nennt Viktor im Chat; fehlt es, EINE Frage mit der Produktliste der Registry. Fehlt in der Registry jedes Produkt (produkte leer), entfällt das Gate — im Lauf-Bericht erwähnen. Produktliste: Brand-Adressbuch datenbanken/sp-brands/daten.csv (Spalte produkte)."
+    },
+    {
       "id": "vmake-clean",
       "typ": "skill",
       "name": "vmake-caption-entfernen",
@@ -52,77 +60,56 @@
       "dienste": [
         "Vmake API"
       ],
-      "beschreibung": "GETEILTES HANDWERK (Skill existiert): Eingebrannte Quell-Captions per Vmake tilgen — auf der GLATTEN QUELLE, nach dem Augen-Check (der die Captions noch liest) und VOR der Clip-Karte (die die bereinigte Quelle zerlegt). Läuft vorne parallel zur Gate-Wartezeit; ein Quell-Lauf deckt alle Re-Renders. Original als _work/source_original.mp4 sichern, Schlieren-Scan Pflicht, Befund ehrlich zeigen."
+      "beschreibung": "GETEILTES HANDWERK (Skill existiert): Eingebrannte Quell-Captions per Vmake tilgen — auf der GLATTEN QUELLE, nach dem Augen-Check (der die Captions noch liest) und VOR der Clip-Karte (die die bereinigte Quelle zerlegt). Läuft vorne parallel zur Gate-Wartezeit; ein Quell-Lauf deckt alle Re-Renders. Original als _work/source_original.mp4 sichern, Schlieren-Scan Pflicht, Befund ehrlich zeigen. Die Textsorten-Liste (_work/gestaltungs-text.md) trennt seit 05.09.2026 hart: Szenen-Text → Custom-Clip-Strecke (Frame-Edit übersetzt mit), nur Overlay-Balken über Real-Footage → fette Caption. Vmake tilgt Szenen-Text oft nur halb (Rest „7…F“) — auch das ist ein Custom-Clip-Fall."
     },
     {
       "id": "clip-karte",
       "typ": "skill",
       "name": "Clip-Karte",
       "ref": ".claude/skills/singing-vsl-clip-karte",
-      "beschreibung": "GETEILTES HANDWERK (Skill existiert): §CLIP-ZUERST Schritt 1 — Quelle in echte Clips zerlegen (scene>0,30), Kontakt-Sheets, Claude beschreibt JEDEN Clip mit eigenen Augen; EN-Text je Clip, Typ R/A/P, Übergangs-Flags. Die Karte ist Pflicht-Eingabe der Übersetzung. PRODUKTTAUSCH-ZUSATZ bleibt: produktzeigende Clips markieren → custom_clips.json als Eingabe der Custom-Clip-Production."
+      "beschreibung": "GETEILTES HANDWERK (Skill existiert): §CLIP-ZUERST Schritt 1 — Quelle in echte Clips zerlegen (scene>0,30), Kontakt-Sheets, Claude beschreibt JEDEN Clip mit eigenen Augen; EN-Text je Clip, Typ R/A/P, Übergangs-Flags. Die Karte ist Pflicht-Eingabe der Übersetzung. PRODUKTTAUSCH-ZUSATZ bleibt: produktzeigende Clips markieren → custom_clips.json als Eingabe der Custom-Clip-Production. GESTALTUNGS-TEXT-MARKIERUNG (Viktors Gesetz 05.09.2026): Beim Kartieren wird JEDER Clip markiert, in dem Text Teil der Szene ist (3D-Preis, Schild, Stempel, Endcard, Titel über einer Produkt-Szene) — er wandert mit form „text“ (oder zusammen mit dem Produkt-Clip) in custom_clips.json. Diese Clips werden in der Custom-Clip-Strecke mit übersetztem Text neu gebaut, NIE an die Captions gegeben."
+    },
+    {
+      "id": "emotionskarte",
+      "typ": "skill",
+      "name": "Emotions-Karte (Original-Delivery)",
+      "ref": ".claude/skills/speaking-vsl-emotionskarte",
+      "dienste": [
+        "Gemini (kie.ai)"
+      ],
+      "beschreibung": "Reverse-Engineering der Original-Stimme: je Copy-Zeile hört ein Anker-bestandenes Gemini-Ohr den Original-Schnipsel ab (Emotion, Ton, Tempo, betonte Wörter, Pausen) und die Karte übersetzt das in ElevenLabs-v3-Audio-Tags für die DEUTSCHEN Zeilen (_pipeline/emotions_karte.json). Grund: v3 ohne Vorgabe wiederholt oder würfelt Emotionen — mit der Karte spricht die deutsche Stimme die gemessene Delivery des Originals nach. Die finale Copy bleibt tag-frei; die Tags konsumiert erst der Sprechspur-Bau."
     },
     {
       "id": "uebersetzung",
       "typ": "skill",
       "name": "Übersetzung (Sprech-Budgets)",
       "ref": ".claude/skills/speaking-vsl-uebersetzung",
-      "beschreibung": "ZU BAUEN (Geist) — der erste Tausch-Knoten: Übersetzung IN Clip-Budgets wie in der Singing-Linie (jede Zeile an ihre Clips gebunden, Format 'Cxxx-Cyyy | Zeile'), aber die Budgets rechnen in SPRECHZEIT statt im Gesangs-Silbenband ×3,6–×5,4: Deutsch läuft gesprochen ~20–30 % länger als Englisch, die Zeile muss in ihr Clip-Fenster passen (Ziel-Band nahe 1,0 — den exakten Wert misst der erste Use-and-Break-Lauf, gegen die Sprech-Rate der gewählten Brand-Stimme aus dem Stimmen-Register). Sinn-Quelle: wortgetreue Fassung; Abweichungs-Protokoll (GEKÜRZT/ERGÄNZT/VERSCHOBEN/TAUSCH) bleibt Pflicht; übersetzen ja, lokalisieren nein."
+      "beschreibung": "ZU BAUEN (Geist) — der erste Tausch-Knoten: Übersetzung IN Clip-Budgets wie in der Singing-Linie (jede Zeile an ihre Clips gebunden, Format 'Cxxx-Cyyy | Zeile'), aber die Budgets rechnen in SPRECHZEIT statt im Gesangs-Silbenband ×3,6–×5,4: Deutsch läuft gesprochen ~20–30 % länger als Englisch, die Zeile muss in ihr Clip-Fenster passen (Ziel-Band nahe 1,0 — den exakten Wert misst der erste Use-and-Break-Lauf, gegen die Sprech-Rate der gewählten Brand-Stimme aus dem Stimmen-Register). Sinn-Quelle: wortgetreue Fassung; Abweichungs-Protokoll (GEKÜRZT/ERGÄNZT/VERSCHOBEN/TAUSCH) bleibt Pflicht; übersetzen ja, lokalisieren nein. Kundensprache: Führt die Brand-DB (Spalte brand_db in datenbanken/sp-brands/daten.csv) eine kundensprache-de.md, wird auf der Wortebene das belegte Wort der Zielgruppe gesetzt, solange Sinn und Fluss tragen — jeder Tausch, jede Lücke und jedes bewusst verworfene Wort als Zeile unter Anmerkungen an die Lokalisierung (dort liest die Lokalisierung)."
     },
     {
       "id": "lokalisierung",
       "typ": "skill",
       "name": "DACH-Lokalisierung",
       "ref": ".claude/skills/singing-vsl-dach-lokalisierung",
-      "beschreibung": "GETEILTES HANDWERK (Skill existiert): Prüft die Übersetzung für DACH und liefert NUR einen Befund in Stichpunkten (Muss / Graubereich / passt) — vor dem Entscheid wird kein Wort der Copy geändert. Hausgesetze wie Garantie 30 Tage und DACH-Feste statt US-Feste gelten hier wörtlich weiter."
-    },
-    {
-      "id": "lokalisierungs-entscheid",
-      "typ": "gate",
-      "name": "Lokalisierungs-Entscheid",
-      "beschreibung": "MENSCH-GATE (wie Singing-Linie): Viktor liest Befund + Copy selbst und entscheidet jeden Punkt. Erst danach arbeitet die KI Freigegebenes in die finale Copy ein; auf Zuruf wandern Copy + Quellvideo in inbox/ — der Start des Sprech-Flows.",
-      "nutzung": "im Chat: „passt“ / „ändere …“"
-    },
-    {
-      "id": "start",
-      "typ": "trigger",
-      "name": "Copy + Quellvideo (inbox)",
-      "beschreibung": "Viktor legt Copy (mit SOLL-Fenstern) + Quellvideo in inbox/. Kürzel-Vorschlag für den Flow: SP (Speaking-Ad) — Projektordner „NNN SP“ statt „NNN SA“; DENK-PUNKT: Kürzel ist Viktors Entscheid, noch offen.",
-      "nutzung": "im Chat: Material in inbox/, „bau eine Speaking-Ad NNN SP“"
+      "beschreibung": "GETEILTES HANDWERK (Skill existiert): Prüft die Übersetzung für DACH und liefert den Befund in Stichpunkten — am Befund ändert sich nichts, aber der Lauf STOPPT hier nicht mehr (Viktors Ansage 21.08.2026: ein Stopp statt zwei). Anpassungen (harte Fakten-/Store-Brüche + Log-Muster) fließen direkt in die finale Copy; die offenen ENTSCHEIDUNGEN wandern als Beilage an die Audio-Prüfung, gebaut wird bis dahin mit der Empfehlungs-Option (ohne Empfehlung: Original). Kippt Viktor dort eine Entscheidung, werden nur die betroffenen Zeilen neu gesprochen. Hausgesetze (Garantie 30 Tage, DACH-Feste statt US-Feste) gelten wörtlich weiter. OFFER-GESETZ (Viktors Befund 04.09.2026 „Offer verkackt“): Angebots-Fakten (Bundles, Rabatt, Gratis-Zugaben, Versand) kommen IMMER aus der Store-Doku der Ziel-Brand (Brand-DB, z. B. Shopify Store/05 Areum/areum-angebot.md), nie aus der Quell-Ad — die Quell-Ad liefert nur die Mechanik des Pitches. Fehlt die Store-Doku: Viktor fragen, nicht das Quell-Offer übernehmen."
     },
     {
       "id": "bootstrap",
       "typ": "tool",
       "name": "Projekt-Bootstrap",
       "ref": "tools/sp",
-      "beschreibung": "ZU BAUEN (Geist, startet als angepasste Kopie von tools/sa/new_project.py): legt den Pipeline-Ordner an, holt Copy+Video aus inbox/, MISST die Quelle (Frames/fps/Dauer per ffprobe) und portiert die Pipeline des neuesten SP-Projekts mit injizierten Konstanten → _pipeline/sp_config.json. Bekannte Falle der SA-Portierung wandert als Gesetz mit: Projektnummern-Ersatz darf keine Float-Literale verstümmeln — nach jedem Port prüfen."
-    },
-    {
-      "id": "stimm-casting",
-      "typ": "skill",
-      "name": "Stimm-Casting (einmal je Brand)",
-      "ref": ".claude/skills/speaking-vsl-stimm-casting",
-      "dienste": [
-        "ElevenLabs API"
-      ],
-      "beschreibung": "Castet EINMAL je Marke die deutsche Sprecherin. Zwei Gesetze: nur deutsche Muttersprachler aus der oeffentlichen Bibliothek (die Konto-Standardstimmen sind amerikanisch, auch wenn sie als DE-verifiziert gefuehrt werden), und entschieden wird per GEMESSENER Tonhoehen-Variation — 25-35 % ist das Band eines natuerlichen deutschen Werbe-Reads. Gefiltert wird nach Geschlecht und Alter der Avatarin aus dem Quellvideo, Register advertisement/social_media schlaegt narrative_story. Ergebnis landet im Stimmen-Register und wird nie wieder gesucht."
-    },
-    {
-      "id": "stimmen-entscheid",
-      "typ": "gate",
-      "name": "Stimmen-Entscheid",
-      "beschreibung": "MENSCH-GATE, NEU, einmal je Brand: Viktor hört die Kandidaten und wählt DIE Brand-Stimme — danach steht sie im Stimmen-Register und künftige Läufe überspringen dieses Gate komplett (kein Pro-Ad-Gate; die Pro-Ad-Wahl ist objektiv, wie beim entfernten Song-Gate der Singing-Linie).",
-      "nutzung": "im Chat: Kandidaten anhören, „Stimme N“"
+      "beschreibung": "tools/sp/new_sp_project.py — legt den Pipeline-Ordner brands/<Brand>/<NNN> EL an (Läufe vor dem 02.09.2026: <NNN> SP) (_pipeline + _work, sp_config.json, source.mp4, source_words.json aus dem Scribe-Roh-JSON), portiert clip_karte.py und trägt den Pipeline-Ordner in die karte.md nach. Läuft direkt nach der Lokalisierung — der Entscheid fällt gebündelt an der Audio-Prüfung (Viktors Ansage 21.08.2026)."
     },
     {
       "id": "sprach-bau",
       "typ": "tool",
-      "name": "Sprechspur-Bau (Absatz-Takes)",
+      "name": "Sprechspur-Bau (ElevenLabs v3)",
       "ref": "tools/sp",
       "dienste": [
         "ElevenLabs API",
         "Gemini (kie.ai)"
       ],
-      "beschreibung": "ZU BAUEN (Geist) — der Kern-Tausch: statt Block-Parents/Naht-Gesetz/Tonart-Anker baut ElevenLabs die Sprechspur absatzweise (Kontext-Stitching, damit Ton und Energie über Absatzgrenzen halten), je Absatz mehrere Takes, Wahl objektiv im Zeit-Band gegen die SOLL-Fenster plus Maschinen-Ohr. Werkzeuge der Stimme statt der Musik: Betonungs-/Pausen-Tags (v3), Tempo über die Stimm-Einstellungen (nicht über Playback), Aussprache-Lexikon für Zahlen, €-Preise und Markennamen (Areum!). GESETZ bleibt wörtlich: fertige Sprechspur = Master, nie anfassen. GROSSER UNTERSCHIED zur Singing-Linie: die TTS liefert die Wort-Zeitstempel GRATIS mit — der Wort-Cache entsteht beim Bau, kein Demucs, kein Forced Alignment. Das Gesetz-Regelwerk (Pendant zu sa-resync-singing-ad) entsteht beim Bauen dieses Geists."
+      "beschreibung": "tools/sp/sprechspur.py — HIER wird ElevenLabs generiert. Liest die Brand-Stimme aus dem Stimmen-Register und die v3-Audio-Tags aus der Emotions-Karte, erzeugt die Copy als EINEN Take (Gesetz aus gemessenem Lauf: blockweise erzeugt klingt roboterhaft), schneidet an den GEMESSENEN Sprechpausen, legt die Blöcke per adelay auf ihre Zeitmarken und normalisiert (loudnorm). Schreibt zusätzlich den Wort-Cache (_pipeline/sprech_words.json, via Scribe auf der fertigen Spur) für die Captions. STIMMWAHL (Viktors Ansage 21.08.2026): Hat die Brand noch keine per Ohr entschiedene Register-Stimme oder ruft Viktor Varianten, liefert die Vorauswahl aus speaking-vsl-stimm-casting (Bibliotheks-Filter + Tonhöhen-Messung) die Top-5 im Band, und die GANZE Spur wird je Kandidatin gebaut: 5 Varianten, jede durch denselben Take-und-Montage-Weg. Entschieden wird an der Audio-Prüfung am ganzen Audio, die Gewinnerin kommt ins Stimmen-Register. Brand mit entschiedener Register-Stimme: eine Spur.\n\nLEBENDIGKEIT (Viktors Gate-Befund 05.09.2026, ARE 001 EL — „monoton, bin fast eingeschlafen“): v3 mit stability 0,3 (sprechspur.py --stability), nicht 0,5; die Emotions-Tags kommen aus der kalibrierten Emotions-Karte (5–7 Tags an den Wendepunkten Hook/Problem/Lösung/Beweis/Anker/CTA); Zahlen im Take-Text ausgeschrieben, kein Block beginnt mit einem Zahlwort. MONTAGE-KANTEN (Befund „Bruch bei 13 s und 36 s“): Blöcke werden an den gemessenen Wortzeiten geschnitten (300 ms Atem-Vorlauf, 200 ms Nachlauf, weiche Blenden), Grundrauschen auf Take-Niveau statt digitaler Null — Gesetz in sprech-watch. DAUMENREGEL BILD↔STIMME: Passt Sprache und Bild nicht zusammen, wird die Stimme schneller (Tempo-Lift, Pausen-Quetsche), nie der Clip langsamer — Ausnahmen sagt Viktor je Lauf an. EMOTION: Tags je SATZ am Wendepunkt (Emotions-Karte auf Satz-Ebene, stability 0,25) — kein Abschnitt über 8 s ohne Tag-Wechsel. STIMM-VERGLEICH auf Zuruf: n Stimmen aus dem Casting-Trichter, je Stimme die ganze Kette bis zum eigenen CapCut-Paket (sprech-watch §Varianten-Lauf). JEDE VARIANTE = EIGENES PROJEKT: erste Variante behält die Auftragsnummer, jede weitere die nächste freie EL-Nummer, alle mit Zusatz „(Stimme <Name>)“ im Projektnamen, karte.md mit variante-von — sonst kollidieren zwei Ads unter einem Namen im Uploader und bei Meta (sprech-watch §Varianten-Lauf)."
     },
     {
       "id": "sprech-watch",
@@ -133,25 +120,42 @@
         "ElevenLabs API",
         "Gemini (kie.ai)"
       ],
-      "beschreibung": "Erzeugt die Sprechspur und prueft sie gegen die Zeitfenster. Grundgesetz: die ganze Copy in EINEM Take, danach an den gemessenen Sprechpausen schneiden und auf die Zeitmarken legen — nie Block fuer Block erzeugen, sonst legt das Modell in jeden Block eine Schlussmelodie und die Stimme hoert mitten im Gedanken auf. Modell-Liste des Kontos vorher abfragen statt annehmen."
+      "beschreibung": "Der Prüfer-Loop (Muster Custom-Clip-Prüfer): tools/sp/pruefer.py hört jede Zeile maschinell ab — Rück-Transkription (Scribe) gegen die Soll-Copy (Versprecher, Doppelwörter, Auslassungen), Pausen-Messung (Hänger), Fenster-Zeiten, dazu das Anker-kalibrierte Gemini-Ohr für Aussprache/Artefakte. Rote Zeile → NUR diese Stelle neu (max. 3 Versuche), dann Befund. Grund: ElevenLabs one-shottet lange Spuren nie fehlerfrei — der Loop drückt die Fehlerrate, das Gate danach trainiert ihn. Bei Varianten-Läufen prüft der Loop JEDE Variante — die Prüf-Tabellen liegen der Audio-Prüfung bei. Seit 05.09.2026 zusätzlich der Kanten-Scan nach jeder Montage (Messung, kein Ohr-Urteil: kein Fenster unter −100 dB, kein Pegelsprung > 30 dB aus der Stille an einer Marke) — das Gemini-Ohr erkennt solche Brüche nachweislich nicht. SCHNITTKANTEN-ANKER (Befund ARE 004 EL, Sekunde 9 „zu abrupt“): Marken, deren Copy-Zeile im Original auf einer Schnittkante beginnt, bleiben auf der Kante (Planer marken_planen.py --kanten clip_karte.json); nur Marken mitten im Clip wandern. Ein vor die Kante gezogener Block klingt abrupt (neuer Gedanke über altem Bild, Pause zur digitalen Stille geschrumpft). Luft vor einer Kante bis 1,0 s ist Atem, kein Fehler."
+    },
+    {
+      "id": "sprechspur-gate",
+      "typ": "gate",
+      "name": "Audio-Prüfung",
+      "beschreibung": "DAS gebündelte Mensch-Gate der Sprech-Phase (Viktors Ansage 21.08.2026), bewusst früh statt erst am Ende. Viktor hört hier die Stimm-Varianten Block für Block (Links via bildboard) und entscheidet DREI Dinge auf einmal: (1) welche Stimme die Ad trägt — die Gewinnerin kommt ins Stimmen-Register, künftige Läufe der Brand bauen nur noch sie; (2) die offenen Lokalisierungs-Entscheidungen — der Befund liegt als Beilage an, das frühere eigene Gate ist hierher verschmolzen; (3) Block-Feedback an der Spur — jedes Feedback geht per /evolve in den Prüfer/die Bausteine davor, so wird der Prüfer trainiert. Übergangs-Ziel bleibt: Besteht der Prüfer Läufe in Folge ohne Viktor-Befund, bleibt vom Gate nur die einmalige Stimm-Wahl je Brand (One-Shot-Ziel). DARSTELLUNG AM GATE (Viktors Ansage 04.09.2026, Lauf ARE 002 EL): Die Copy wird IMMER als Zeilen-Paar gezeigt — englische Original-Zeile OBEN, deutsche Zeile direkt DARUNTER, je Block mit Zeitstempel. Eine deutsche Copy allein ist am Gate nicht prüfbar („ich habe nichts zum Vergleichen“). Die Übersetzungs-Datei liefert dieses Paar-Format bereits (speaking-vsl-uebersetzung §Ausgabe). ORIGINAL-VERGLEICH (Viktors Ansage 07.09.2026, Lauf ARE 009 EL — „ich will ja vergleichen“): An diesem Gate steht das ORIGINAL immer neben dem Ergebnis, sonst ist die Gate-Nachricht unvollständig — (1) bildboard-Link auf die unbereinigte Quelle (_work/source_original.mp4 bzw. inbox/<brand>-<meta-ad-id>.mp4, `bild -o <Projekt>`), (2) der Meta-Ad-Library-Link aus der meta-ad-id der karte.md: https://www.facebook.com/ads/library/?id=<meta-ad-id>. Prinzip: Ein Rip wird nur GEGEN seine Quelle beurteilt; das Original ist Teil jeder Vorlage am Mensch-Gate, nie erst auf Nachfrage. PEGEL-LEITER (Befund ARE 008 EL): Zur Audio-Prüfung gehören drei Hörproben Sprechspur + Bett (bett_db, −3, −6 dB aus bett_pegel.py --leiter) als bildboard-Links; Viktors Stufe wird der neue bett_offset_db der Marke in sp-brands. Ohne Antwort bleibt der bisherige Offset.",
+      "nutzung": "im Chat: Original-Link + Ad-Library-Link, Varianten anhören, Copy als EN/DE-Paare lesen, dann Stimme N + Entscheid-Nummern / Befund je Block"
+    },
+    {
+      "id": "lip-sync",
+      "typ": "skill",
+      "name": "Lip-Sync (nur Menschen)",
+      "ref": ".claude/skills/speaking-vsl-lipsync",
+      "dienste": [
+        "Lip-Sync (kie.ai)"
+      ],
+      "bedingung": "Projekt-Karte datenbanken/sp-projekte/<Projekt>/karte.md, Frontmatter lip-sync: JA — die Frage stellt der Trigger nur, wenn der Vorbefund einen Menschen sichtbar im Bild misst",
+      "beschreibung": "Viktors Entscheid 17.09.2026 nach RAN 001 EL („Das Lip-Sync ist gut geworden … nur immer Lip-Sync für Menschen machen“): Spricht in der Quelle ein MENSCH sichtbar in die Kamera (UGC, Ärztin, Presenter), bekommt er nach der Audio-Prüfung einen deutschen Mund — kie.ai volcengine video-to-video-lip-sync nur auf den Frames mit frontalem Gesicht; B-Roll, Hände, Produkte bleiben Original mit der Stimme darüber. NIE Tiere, Cartoon- oder 3D-Figuren (RAN 001 EL: graue verwaschene Hundenase, doppelte Flasche, Maul folgte trotzdem dem Original). Farbblitze und Schwarz-/Weißblenden werden aus den Aufträgen geschnitten (sonst hautfarbener Block im Untergesicht + Farbschleier über den ganzen Clip), die kie-Ausgabe bekommt die Farbkennzeichnung des Eingangs (sonst Hautton-Verschiebung), Sichtprüfung aller Aufträge durch einen Hilfs-Agenten entscheidet, nicht die Mund-Ton-Korrelation. Kosten 8 kie-Credits je volle Sekunde; übersteigt die Schätzung den Kontostand, entscheidet Viktor. Ausgabe: _pipeline/lipsync_einbau.json + _pipeline/lipsync_uebergaenge.json, eingebaut per Projekt-Montage oder lipsync_einbau.py → _work/bild_lipsync.mp4, das der Schnitt rendert. Bedingung nicht erfüllt → Knoten überspringen, der Schnitt nimmt das Bild ohne Lip-Sync."
     },
     {
       "id": "musikbett",
       "typ": "skill",
-      "name": "Musikbett",
+      "name": "Musikbett (Original-Musik + Effekte)",
       "ref": ".claude/skills/speaking-vsl-musikbett",
+      "beschreibung": "Die Original-Musik wird GERIPPT, nicht neu erfunden (Viktors Ansage 05.09.2026): Demucs-Rest (no_vocals) der Quelle = Musik UND Soundeffekte 1:1, als einziges Bett. Der Pegel ist gemessen, nicht geschätzt — Original-Verhältnis Stimme→Bett per ebur128 (vocals vs. no_vocals) nachbauen, --bett-db entsprechend (ARE 001 EL: −1 dB; −10 dB begrub die Musik). Vor jeder Behauptung „keine Musik\" drei Schnipsel des Rests ans Gemini-Ohr; nur wenn alle drei musikfrei sind, kommt ein Suno-Instrumental dazu. PEGEL = Messung + Marken-Regler: tools/sp/bett_pegel.py misst K-bewertet nur in den Sprech-Fenstern (Original-Abstand Stimme→Bett aus den Demucs-Stems, Ist-Abstand aus Sprechspur und Bett) und addiert den Marken-Offset bett_offset_db aus dem Brand-Adressbuch sp-brands — das exakte Original-Verhältnis kann sich unter einer TTS-Stimme als „übertönt“ anhören, obwohl RMS, K-Lautheit, leise Silben und Ducking gleich messen; das Ohr-Urteil je Marke ist darum ein Registry-Fakt, kein Messwert. SAUBERKEIT (Befund ARE 008 EL „nicht clean“, Runde 2): Trennung mit htdemucs_ft (--shifts 2 --overlap 0.5); tools/sp/bett_qualitaet.py misst die Loch-Tiefe des Extrakts im Sprachband als Beleg für den Lauf-Bericht. Das Extrakt bleibt Standard (Viktor: 7 dB Loch bei −4 dB Regler = „A ist gut“); Nachbau im gemessenen Stil (quell_rhythmus.py bett → Suno V5, A/B am Gate) nur auf Viktors Zuruf. Gemini-Ohr erkennt Trenn-Artefakte nicht (Kontroll-Snippet).",
       "dienste": [
-        "Vocal-Removal (kie.ai)",
-        "Suno (kie.ai)"
-      ],
-      "beschreibung": "ZU BAUEN (Geist) — NEU, die Singing-Linie hatte das Problem nicht: dort IST der Song die Musik, eine nackte Sprechstimme klingt dagegen tot. Zwei Wege, VIKTOR-ENTSCHEID OFFEN: (a) Instrumental der QUELLE per Vocal-Removal ziehen (kie.ai, im Haus erprobt) — Stimmung und Dramaturgie-Timing gratis 1:1; oder (b) eigenes Suno-Instrumental (Baustein background-music-suno existiert als loser Stein). Pegel-Gesetz in beiden Fällen: Bett deutlich unter der Stimme, Absenkung unter Sprechpassagen (Ducking), die Sprechspur bleibt Master."
+        "Gemini (kie.ai)"
+      ]
     },
     {
       "id": "schnitt",
       "typ": "tool",
-      "name": "Schnitt + Render",
+      "name": "Schnitt + Render (tools/sp)",
       "ref": "tools/sp",
-      "beschreibung": "ZU BAUEN (Geist, erbt das Block-Anker-Prinzip aus tools/sa): Zeilen-Fenster aus dem Wort-Cache der Sprechspur → Block-Anker-Schnitt (Blöcke hart an der Stimme, Speed-Band 0,8–1,2, Region-Pooling, Verlust-Gate — kein Clip fällt stumm) → Render mit Musikbett-Mischung. Nach jeder sprech-watch-OP läuft dieser Schritt zwingend NEU. DENK-PUNKT: bei Clip-zuerst selbst gegen die Wanduhr rechnen (Sprechzeit ≠ Wanduhr-Gesetz der Singing-Linie gilt sinngemäß)."
+      "beschreibung": "tools/sp/render.py — mischt Sprechspur + Musikbett (Pegel gemessen) und muxt unter das bereinigte Video. Bild-Gesetz: OHNE Pixel-Eingriff -c:v copy (nie neu encodieren); nur wenn Rest-Fenster abgedeckt werden (enge Box laut Gestaltungs-Text-Liste), wird mit crf 18 + bt709-Tags encodiert. Frame-Zahl-Beweis gegen die Quelle gehört zum Lauf. Trägt das Projekt _work/overlays.png (nachgebaute statische Overlays), läuft der Render mit --overlay im Encode-Zweig (crf 18 + bt709) — der einzige Grund neben Abdeck-Boxen, das Bild anzufassen. MIT LIP-SYNC: Das Bild ist _work/bild_lipsync.mp4 (bzw. die Projekt-Montage mit Einbau aus _pipeline/lipsync_einbau.json) — die Lip-Sync-Frames sind bereits die eine Encode-Generation, der Ton-Mux bleibt -c:v copy."
     },
     {
       "id": "abnahme",
@@ -161,7 +165,7 @@
       "dienste": [
         "Gemini (kie.ai)"
       ],
-      "beschreibung": "ZU BAUEN (Geist, Prinzip 1:1 aus der Singing-Linie): jede gesprochene Zeile liegt auf IHREM Original-Bild — Wörter aus dem Wort-Cache gegen die Clip-Beschreibung der Clip-Karte halten, Beweis-Frames an allen Stellen des Abweichungs-Protokolls, Kontakt-Sheets über die volle Länge, Audio-Vollabgleich (Median-Δ/Minute) plus Ohr."
+      "beschreibung": "tools/sp/abnahme.py — maschinelle Abnahme mit Zahlen: Frame-Zahl Quelle == Final, Dauer, je Block Startmarke ±0,25 s (Kreuzkorrelation der Sprechspur im finalen Mix), Loudness-Band. Erst wenn alle Zahlen stehen, geht der Lauf zum Fakten-Check — kein „fertig“ aus dem Gefühl."
     },
     {
       "id": "faktencheck",
@@ -178,7 +182,7 @@
       "dienste": [
         "ElevenLabs API"
       ],
-      "beschreibung": "Baut die deutschen Untertitel als SRT aus den TTS-Wortzeiten — und BRENNT SIE NICHT EIN. Ausgeliefert wird Bild + Sprechspur; die Untertitel setzt Viktor in CapCut, wo sie in Sekunden verschiebbar und umformulierbar sind. Zwei Gesetze: feste Position im unteren Fuenftel, die sich nie bewegt, und hoechstens zwei Zeilen je Einblendung. Dazu die Liste der Gestaltungs-Texte (Hero-Titel & Co.), die ERSETZT werden muessen statt zu fehlen."
+      "beschreibung": "Baut die deutschen Untertitel als SRT aus den TTS-Wortzeiten — und BRENNT SIE NICHT EIN. Ausgeliefert wird Bild + Sprechspur; die Untertitel setzt Viktor in CapCut, wo sie in Sekunden verschiebbar und umformulierbar sind. Zwei Gesetze: feste Position im unteren Fuenftel, die sich nie bewegt, und hoechstens zwei Zeilen je Einblendung. Dazu die Liste der Gestaltungs-Texte (Hero-Titel & Co.), die ERSETZT werden muessen statt zu fehlen. GESTALTUNGS-TEXT-GESETZ (Viktors Befund 05.09.2026): Text, der im Original IN der Szene lebt (3D-Schriftzüge, Schilder, Stempel, Endcard), wird über die Custom-Clip-Strecke ersetzt, nie als fette Caption — nur echter Overlay-Balken über Real-Footage bleibt Caption-Fall (speaking-vsl-captions §Gestaltungs-Text). Gestaltungs-Text (auch Overlay-Blasen/Siegel/Badges) ist seit dem Befund ARE 009 EL (07.09.2026) NIE Caption-Sache — er wird in der Custom-Clip-Strecke im Bild ersetzt; fette_captions.json ist standardmäßig leer. STATISCHE OVERLAYS (Titelbox, Kopfzeile, Preis-Störer über Real-Footage) baut die Kette SELBST nach — gemessen am Original (Position, Versalhöhe, Farben, Rand, Schatten, Emoji-Ausschnitt), nur der Wortlaut übersetzt/lokalisiert: tools/sp/overlays.py → _work/overlays.png, Vorschau neben dem Original ist Pflicht; fette CapCut-Captions dafür sind abgeschafft (fette_captions.json = [])."
     },
     {
       "id": "capcut-push",
@@ -186,7 +190,7 @@
       "name": "CapCut-Push (Mac-Chat)",
       "ref": ".claude/skills/speaking-vsl-captions",
       "umgebung": "mac",
-      "beschreibung": "ZU BAUEN (Geist, erbt Schritte 6–8 aus sa-captions-capcut wörtlich): Viktor fügt den Ein-Prompt in einen NEUEN lokalen Claude-Chat am Mac ein; der zieht das Paket per rsync und baut NUR den CapCut-Draft (Projektname des Rips), Karaoke-Stil, Neustart, Bericht. Server-Schritte werden NIE wiederholt.",
+      "beschreibung": "tools/sp/capcut_paket.py schnürt das Mac-Paket: final.mp4 (fertiger Mix), Mitlese-Häppchen (Wort-Cache → ziffern.py → haeppchen, Musik-Finder-Regeln), fette_captions.json (Gestaltungs-Texte mit Position/Original-Look, Wortlaut = Viktors Entscheid in CapCut) + gevendorte CapCut-Skripte + ANLEITUNG-FUER-DIE-KI.md. Der Ein-Prompt fürs Mac-Fenster kommt als Datei (PROMPT-FUER-MAC.txt) UND als Codeblock im Chat — ohne beides ist die Ad nicht übergeben. Auf dem Mac baut die KI den Draft (capcut_export.draft_bauen) und richtet Stil + fette Captions ein. VARIANTEN: Bei einem Stimm-Vergleich schnürt capcut_paket.py je Stimme ein Paket (--stimme „<Name>“ → _capcut-paket-<slug>, CapCut-Name „<Projektname> (Stimme <Name>)“) — Viktor sieht im Projektnamen, welche Stimme er hört; die Sichtung wählt, die Gewinnerin kommt ins Stimmen-Register. Das Paket trägt nur noch Mitlese-Häppchen; Gestaltungs-Overlays sitzen bereits im final.mp4. Bei Varianten als eigenen Projekten heißt das Paket wieder _capcut-paket/ und der CapCut-Name ist der Projektname.",
       "nutzung": "am Mac: Ein-Prompt in neuen lokalen Claude-Chat einfügen"
     },
     {
@@ -194,8 +198,8 @@
       "typ": "gate",
       "name": "CapCut-Sichtung",
       "umgebung": "mac",
-      "beschreibung": "MENSCH-GATE am Ende (wie Singing-Linie): Viktor sichtet die fertige Ad im frisch gebauten CapCut-Projekt und exportiert. Sein Feedback fließt über /feedback in Skills/Workflow zurück (Use and Break — der Schrank ist der Workflow, nie das einzelne Projekt); Maschinen-Befunde und dokumentierte Trade-offs des Laufs werden ihm hier vorgelegt.",
-      "nutzung": "in CapCut: sichten + exportieren · Feedback im Chat"
+      "beschreibung": "MENSCH-GATE am Ende (wie Singing-Linie): Viktor sichtet die fertige Ad im frisch gebauten CapCut-Projekt und exportiert. Sein Feedback fließt über /evolve in Skills/Workflow zurück (Use and Break — der Schrank ist der Workflow, nie das einzelne Projekt); Maschinen-Befunde und dokumentierte Trade-offs des Laufs werden ihm hier vorgelegt. ORIGINAL-VERGLEICH (Viktors Ansage 07.09.2026, Lauf ARE 009 EL — „ich will ja vergleichen“): An diesem Gate steht das ORIGINAL immer neben dem Ergebnis, sonst ist die Gate-Nachricht unvollständig — (1) bildboard-Link auf die unbereinigte Quelle (_work/source_original.mp4 bzw. inbox/<brand>-<meta-ad-id>.mp4, `bild -o <Projekt>`), (2) der Meta-Ad-Library-Link aus der meta-ad-id der karte.md: https://www.facebook.com/ads/library/?id=<meta-ad-id>. Prinzip: Ein Rip wird nur GEGEN seine Quelle beurteilt; das Original ist Teil jeder Vorlage am Mensch-Gate, nie erst auf Nachfrage.",
+      "nutzung": "in CapCut: sichten + exportieren · Feedback im Chat · Gate-Nachricht trägt Original-Link (bildboard) + Ad-Library-Link neben der fertigen Ad"
     },
     {
       "id": "ad-upload",
@@ -224,43 +228,44 @@
       "typ": "skill",
       "name": "Custom-Clip-Production",
       "ref": ".claude/skills/custom-clip-production",
-      "beschreibung": "GETEILTES HANDWERK (Skill existiert, unabhängig vom Audio-Typ): Ersetzt die in der Clip-Karte markierten Produkt-Clips durch Custom Clips mit dem rebrandeten Areum-Produkt — NUR-START-FRAME-Methode, Kling in ganzen Sekunden, HART auf Originallänge schneiden. Referenzen: datenbanken/brand-quasi/Product Reference/."
+      "beschreibung": "GETEILTES HANDWERK (Skill existiert, unabhängig vom Audio-Typ): Ersetzt die in der Clip-Karte markierten Produkt-Clips durch Custom Clips mit dem rebrandeten Areum-Produkt — NUR-START-FRAME-Methode, Kling in ganzen Sekunden, HART auf Originallänge schneiden. Referenzen: der Product Reference/ der aufgelösten Brand-DB. ZUSATZ (05.09.2026): Die Strecke ersetzt auch den Gestaltungs-Text in der Szene — im Frame-Edit mitübersetzt (custom-clip-production §4b), Text-Clips ohne Produkt mit form „text“; bei Text-Verdopplung durch Kling deterministischer Push-in per ffmpeg. HINTERGRUND-WAHRHEIT: Der Start-Frame kommt aus der Quelle mit dem saubersten Hintergrund (Vmake-Fassung nur, wenn ihr Befund im Fenster keine Schlieren nennt — sonst Original-Frame, Overlays im Edit mit entfernen); jeder Edit trägt die Hintergrund-Reparatur-Klausel; Schärfe und Prüfer-Zeile 6 vergleichen gegen den ORIGINAL-Frame. Ein Custom Clip mit verschwommenem Hintergrund ist durchgefallen, so gut das Produkt auch aussieht (custom-clip-production §4/§7). GESTALTUNGS-TEXT JEDER ART (Viktors Ansage 07.09.2026, Befund ARE 009 EL — die TikTok-Kommentar-Blase fehlte in der fertigen Ad): Nicht nur Szenen-Text, auch Overlay-Elemente (Kommentar-Blase, Garantie-Siegel, Badge, Kopfzeilen-Balken) werden im Frame-Edit übersetzt; der übersetzte Frame ist der Start-Frame (custom-clip-production §4b). Statische Overlays über mehrere Clips werden einmal übersetzt und als Overlay auf alle betroffenen Clips gelegt. Kein Gestaltungs-Text wird CapCut-Caption, keiner ist optional — fette_captions.json bleibt leer, außer Viktor ordnet eine Caption an.",
+      "bedingung": "sp-brands: customClips = true — ODER _work/gestaltungs-text.md hat mindestens einen Gestaltungs-Text-Eintrag (Szenen-Text ODER Overlay-Element wie Kommentar-Blase, Siegel, Badge)"
     },
     {
       "id": "custom-pruefer",
       "typ": "skill",
       "name": "Custom-Clip-Prüfer (Handlungs-Loop)",
       "ref": ".claude/skills/custom-clip-production",
-      "beschreibung": "GETEILTES HANDWERK (Skill existiert): prüft jeden fertigen Custom Clip gegen das Handlungs-Inventar des Originals — TRUE/FALSE je Zeile, kein Geschmack; FALSE → Prompt nachschärfen, max. 3 Versuche, dann Befund an Viktor."
+      "beschreibung": "GETEILTES HANDWERK (Skill existiert): prüft jeden fertigen Custom Clip gegen das Handlungs-Inventar des Originals — TRUE/FALSE je Zeile, kein Geschmack; FALSE → Prompt nachschärfen, max. 3 Versuche, dann Befund an Viktor. GEISTER-MESSUNG + GRAFIK-BEWEGUNG (Befund ARE 004 EL, Sekunde 8 und 16): Der Prüfer misst den ersten Frame jedes Custom Clips gegen den letzten Frame des Original-Vorclips — Korrelation über 0,6 = Vorszene geistert (Start-Frame lag in einer Blende) → FALSE, Start-Frame nach der Blenden-Regel neu greifen, Blende per xfade im Schnitt nachbauen. Grafik-Clips mit Bewegung (Karten-Slider, Review-Wand) laufen nicht über Kling aus einem Frame (stehen still), sondern über die gemessene Bahn des Originals, deterministisch nachgespielt (custom-clip-production §4c).",
+      "bedingung": "sp-brands: customClips = true"
     },
     {
       "id": "projekte",
       "typ": "datenbank",
-      "name": "Projekte (Quasi-Linie)",
-      "ref": "datenbanken/projekte-quasi",
-      "beschreibung": "Ein Ordner je Projekt dieser Linie (Naming „KÜRZEL NNN | DATUM“): Karte mit Quell-Hash (Doppel-Rip-Schutz) + Vorstufen-Dateien. GETEILT mit der Singing-Quasi-Linie — gleiche Brand, gleiche Nummernserie, das Flow-Kürzel (SA/SP) unterscheidet die Pipeline-Ordner. DENK-PUNKT: falls Viktor die Speaking-Linie für eine ANDERE Brand zuerst will, bekommt sie nach dem Markt-Brand-Modell ihre eigene Kopie dieses Workflows samt eigener Projekte-DB."
+      "name": "Projekte (Speaking)",
+      "ref": "datenbanken/sp-projekte",
+      "beschreibung": "Eigene Projekte-Datenbank der Speaking-Kette — bewusst GETRENNT von den Singing-Linien (Viktors Entscheid). Ein Ordner je Projekt („KÜRZEL NNN EL | DATUM“, brand-übergreifend hier drin): Karte mit Quell-Hash (Doppel-Rip-Schutz gegen ALLE Projekt-DBs) + Vorstufen-Dateien + Emotions-/Sprechspur-Belege. Pipeline-Ordner: brands/<Brand>/<NNN> EL. Die Nummern-Serie ist seit 02.09.2026 EIGEN (gezählt nur unter EL-Projekten) — frei sein muss „KÜRZEL NNN EL“ in dieser DB und der Ordner „NNN EL“ unter brands/."
+    },
+    {
+      "id": "brand-db",
+      "typ": "datenbank",
+      "name": "Brand-Adressbuch (Speaking)",
+      "ref": "datenbanken/sp-brands",
+      "beschreibung": "Das eigene Adressbuch der Speaking-Kette: je Ziel-Brand eine Zeile (Kürzel, brands/-Ordner, Sprache, Pfad zur Brand-Wissensdatenbank im AWMS-Hauptordner, customClips-Schalter). Die Lokalisierung liest darüber die Brand-DB (lokalisierungs-log, Store-Doku, Research) — ohne Umweg über die Linien-Registry der Singing-Kette. Seit 02.09.2026 liest auch das Ripping Sheet diese Datei (Agent-Dialog): Spalte quell_brands sagt, aus welchen Sheet-Bibliotheken in die Brand gerippt werden darf — leer = jede."
     },
     {
       "id": "learnings",
       "typ": "datenbank",
-      "name": "Learnings",
-      "ref": "datenbanken/learnings",
-      "beschreibung": "Der destillierte Erfahrungsschatz des Agenten — wird vor jedem Build und beim Fakten-Check gelesen. Geteilt, trägt kein Brand-Wissen."
+      "name": "Learnings (Speaking)",
+      "ref": "datenbanken/sp-learnings",
+      "beschreibung": "Der destillierte Erfahrungsschatz DIESER Kette (eigene Datei, nicht die Singing-Learnings): Ein-Take-Gesetz, Sprech-Band W/s, Muttersprachler-Regel, Vmake-Regeln, Emotions-Tags. Wird vor Sprechspur-Bau und Fakten-Check gelesen; /evolve schreibt destillierte Prinzipien hierher."
     },
     {
       "id": "stimmen",
       "typ": "datenbank",
       "name": "Stimmen-Register",
       "ref": "datenbanken/stimmen",
-      "beschreibung": "ZU BAUEN (Geist) — das Pendant zu den Musik-Gruppen der Singing-Linie: je Brand DIE gewählte ElevenLabs-Stimme mit allem, was Neuerzeugung und Betrieb braucht — voice_id, Design-Prompt (Neuerzeugungs-Beschreibung wie bei der Persona), Stimm-Einstellungen, Aussprache-Lexikon der Brand (Markennamen, Preise) und die gemessene Sprech-Rate (Silben/s), die die Übersetzung für ihre Budgets liest. Casting schreibt einmal je Brand; jeder Ad-Lauf liest nur."
-    },
-    {
-      "id": "brand-quasi",
-      "typ": "datenbank",
-      "name": "Brand-DB Quasi (QUA)",
-      "ref": "datenbanken/brand-quasi",
-      "projekt": "business",
-      "beschreibung": "Brand-Wissensdatenbank der Ziel-Brand Quasi/Areum (AWMS-Ebene): Store-Doku als Maßstab, Research-Ansammlung, lokalisierungs-log.md (append-only; zwei gleiche Entscheide hintereinander = Muster ohne Rückfrage). Product Reference/ trägt die Referenzbilder fürs Rebranding — die Custom-Clip-Production liest ausschließlich von dort. In diesem Workflow gilt IMMER diese Brand-DB."
+      "beschreibung": "EXISTIERT (datenbanken/stimmen/daten.csv — eine simple Tabellen-Textdatei, eine Zeile je Brand). Das Pendant zu den Musik-Gruppen der Singing-Linie: je Brand DIE Stimme mit allem, was der Betrieb braucht — voice_id, Name, Modell, Stimm-Einstellungen (stability/similarity/style) und die gemessene Sprech-Rate, die die Übersetzung für ihre Budgets liest; daneben eintraege/<KÜRZEL>-lexikon.md fürs Aussprache-Lexikon (Markennamen, Preise). Befüllt wird die Zeile auf Viktors Zuruf oder beim ersten Lauf einer Brand (Wahl-Methode: offener Brainstorm) — Casting-Knoten und Stimmen-Gate sind entfernt (Viktors Entscheid 20.08.2026). Jeder Ad-Lauf liest nur."
     },
     {
       "id": "meta-werbekonto",
@@ -289,6 +294,11 @@
     },
     {
       "von": "augen-check",
+      "nach": "produkt-abgleich",
+      "typ": "haupt"
+    },
+    {
+      "von": "produkt-abgleich",
       "nach": "vmake-clean",
       "typ": "haupt"
     },
@@ -298,53 +308,18 @@
       "typ": "haupt"
     },
     {
-      "von": "clip-karte",
-      "nach": "uebersetzung",
-      "typ": "haupt"
-    },
-    {
       "von": "uebersetzung",
       "nach": "lokalisierung",
       "typ": "haupt"
     },
     {
-      "von": "lokalisierung",
-      "nach": "lokalisierungs-entscheid",
-      "typ": "haupt"
-    },
-    {
-      "von": "lokalisierungs-entscheid",
-      "nach": "start",
-      "typ": "haupt"
-    },
-    {
-      "von": "start",
-      "nach": "bootstrap",
-      "typ": "haupt"
-    },
-    {
       "von": "bootstrap",
-      "nach": "stimm-casting",
-      "typ": "haupt"
-    },
-    {
-      "von": "stimm-casting",
-      "nach": "stimmen-entscheid",
-      "typ": "haupt"
-    },
-    {
-      "von": "stimmen-entscheid",
       "nach": "sprach-bau",
       "typ": "haupt"
     },
     {
       "von": "sprach-bau",
       "nach": "sprech-watch",
-      "typ": "haupt"
-    },
-    {
-      "von": "sprech-watch",
-      "nach": "schnitt",
       "typ": "haupt"
     },
     {
@@ -458,17 +433,17 @@
       "typ": "liest"
     },
     {
-      "von": "brand-quasi",
+      "von": "brand-db",
       "nach": "lokalisierung",
       "typ": "liest"
     },
     {
       "von": "lokalisierung",
-      "nach": "brand-quasi",
+      "nach": "brand-db",
       "typ": "schreibt"
     },
     {
-      "von": "brand-quasi",
+      "von": "brand-db",
       "nach": "custom-clips",
       "typ": "liest"
     },
@@ -488,11 +463,6 @@
       "typ": "liest"
     },
     {
-      "von": "stimm-casting",
-      "nach": "stimmen",
-      "typ": "schreibt"
-    },
-    {
       "von": "ad-upload",
       "nach": "projekte",
       "typ": "schreibt"
@@ -506,17 +476,112 @@
       "von": "ad-uploader",
       "nach": "meta-werbekonto",
       "typ": "schreibt"
+    },
+    {
+      "von": "clip-karte",
+      "nach": "emotionskarte",
+      "typ": "haupt"
+    },
+    {
+      "von": "emotionskarte",
+      "nach": "uebersetzung",
+      "typ": "haupt"
+    },
+    {
+      "von": "projekte",
+      "nach": "emotionskarte",
+      "typ": "liest"
+    },
+    {
+      "von": "sprech-watch",
+      "nach": "sprechspur-gate",
+      "typ": "haupt"
+    },
+    {
+      "von": "sprechspur-gate",
+      "nach": "lip-sync",
+      "typ": "haupt"
+    },
+    {
+      "von": "lip-sync",
+      "nach": "schnitt",
+      "typ": "haupt"
+    },
+    {
+      "von": "lip-sync",
+      "nach": "projekte",
+      "typ": "schreibt"
+    },
+    {
+      "von": "learnings",
+      "nach": "sprach-bau",
+      "typ": "liest"
+    },
+    {
+      "von": "lokalisierung",
+      "nach": "bootstrap",
+      "typ": "haupt"
+    },
+    {
+      "von": "sprechspur-gate",
+      "nach": "stimmen",
+      "typ": "schreibt"
+    },
+    {
+      "von": "brand-db",
+      "nach": "produkt-abgleich",
+      "typ": "liest"
+    },
+    {
+      "von": "produkt-abgleich",
+      "nach": "projekte",
+      "typ": "schreibt"
+    },
+    {
+      "von": "brand-db",
+      "nach": "musikbett",
+      "typ": "liest"
+    },
+    {
+      "von": "brand-db",
+      "nach": "uebersetzung",
+      "typ": "liest"
+    },
+    {
+      "von": "sprechspur-gate",
+      "nach": "brand-db",
+      "typ": "schreibt"
     }
   ],
   "notizen": [
     "Geburt 20.08.2026 (Viktors Ansage per Transkript): Rahmen zuerst, Use and Break danach. Foundation = Longform-Singing-VSL-Quasi; dieser Entwurf ist RUNDE 1 des Gesprächs — jeder Knoten steht zu Viktors Entscheid, die Datei wird während des Gesprächs weitergezeichnet. Gebaut (SKILL.md/Tools/DATENBANK.md) wird erst nach seinem „passt“, jede Skill-Datei dann über den skill-crafter.",
     "Strategie der Linie: Die Singing-Linie fischt mit hartem Erkenner (Cartoon+Gesang+Englisch — bleibt unangetastet, nie lockern). Die Speaking-Linie öffnet den Trichter auf JEDE gesprochene Longform-VSL — das ist der eigentliche Hebel des ElevenLabs-Tauschs: gleicher Rahmen, um ein Vielfaches mehr rippbares Quellmaterial. Die Rip-Auswahl bleibt Viktors Klick im Sheet, kein Auto-Erkenner in Runde 1.",
     "RAUS (Suno-Spezifika, ersatzlos oder ersetzt): Song-Gesetz-Knoten samt Block-Parents/Naht-Gesetz/Tonart-Anker (ersetzt durch Sprechspur-Bau mit Absatz-Takes) · Musik-Gruppen-DB (ersetzt durch Stimmen-Register) · song-watch mit Replace-Section-OPs (ersetzt durch sprech-watch mit Zeilen-Neuwurf) · Demucs-Stem + Forced Alignment der Captions (TTS liefert Wortzeiten gratis) · Gesangs-Silbenband ×3,6–×5,4 der Übersetzung (ersetzt durch Sprech-Band nahe 1,0) · formate-Anbindung der Suno-Kaskade (das Sprech-Gesetz entsteht neu in den Geist-Skills).",
-    "NEU (hat die Singing-Linie nicht): Stimmen-Register + Stimm-Casting mit Mensch-Gate einmal je Brand — die Stimme ist Brand-DNA wie die Persona. KLON-TABU als hartes Gesetz: nie die Original-Sprecherstimme der Quelle klonen (Rechte + ElevenLabs-Konto-Risiko; das Konto trägt auch Scribe/FA der Singing-Linie). Musikbett als eigener Schritt (der Song WAR die Musik; Quelle offen: Vocal-Removal-Instrumental der Quelle vs. eigenes Suno-Instrumental). Aussprache-Lexikon je Brand (Zahlen, €-Preise, Markennamen).",
+    "NEU (hat die Singing-Linie nicht): Stimmen-Register — je Brand DIE Stimme, Brand-DNA wie die Persona (Casting-Knoten + Stimmen-Gate am 20.08.2026 auf Viktors Ansage wieder entfernt). KLON-TABU als hartes Gesetz: nie die Original-Sprecherstimme der Quelle klonen (Rechte + ElevenLabs-Konto-Risiko; das Konto trägt auch Scribe/FA der Singing-Linie). Musikbett als eigener Schritt (der Song WAR die Musik; Quelle offen: Vocal-Removal-Instrumental der Quelle vs. eigenes Suno-Instrumental). Aussprache-Lexikon je Brand (Zahlen, €-Preise, Markennamen).",
     "BEWUSST GETEILT mit der Singing-Linie (Handwerk ohne Brand-Wissen, Refs zeigen auf dieselben Bausteine): Ripping Sheet, Transkription, Augen-Check, Vmake, Clip-Karte, DACH-Lokalisierung, Faktencheck, Custom-Clip-Strecke, CapCut-Übergabe-Gesetze (Ein-Prompt im Chat, AX41-Pfad-Regel), Upload-Strecke. Linien-Trennung gilt weiter je BRAND: dieser Workflow ist die Quasi-Linie; weitere Sprachen/Brands = eigene Kopie nach dem Markt-Brand-Modell (Quell-Brand → 1 Sprache = 1 Brand = 1 Workflow).",
-    "Gates-Stand des Rahmens: Lokalisierungs-Entscheid + CapCut-Sichtung wie gehabt, NEU der Stimmen-Entscheid (einmal je Brand, danach übersprungen). Maschinen-Gates stoppen nur den Bau — fixen oder als Trade-off dokumentieren, NIE auf Viktor warten (Gesetz der Singing-Linie, Viktors Entscheid 2026-07-20, gilt wörtlich).",
-    "OFFENE VIKTOR-ENTSCHEIDE für Runde 2: (a) Musikbett-Quelle — Instrumental der Quelle per Vocal-Removal (1:1-Stimmung gratis) oder eigenes Suno-Instrumental? (b) Stimm-Casting — eigener seltener Workflow (Präzedenz: Musikgruppen-Erstellung wanderte aus genau diesem Grund aus der Pro-Ad-Kette) oder in der Kette lassen? Nachrangig: erste Test-Brand wirklich Quasi? Flow-Kürzel „SP“?",
+    "Gates-Stand (nach Viktors Ansage 20.08.2026 „zu viele Gates“): Mensch-Gates sind nur noch Lokalisierungs-Entscheid + CapCut-Sichtung, dazu ÜBERGANGSWEISE die Sprechspur-Abnahme (trainiert den Prüfer, fliegt bei One-Shot-Reife raus). Stimm-Casting + Stimmen-Entscheid sind ENTFERNT — die Stimme kommt aus dem Stimmen-Register, ohne eigenen Knoten und ohne Gate. Maschinen-Gates stoppen nur den Bau — fixen oder als Trade-off dokumentieren, NIE auf Viktor warten (Gesetz der Singing-Linie, Viktors Entscheid 2026-07-20, gilt wörtlich).",
+    "OFFENE VIKTOR-ENTSCHEIDE (Stand 20.08.2026 abends): (a) Stimmwahl-Methode fürs Register — Viktors Zuruf, automatische Wahl am Original-Profil (Klang-Zwilling) oder Voice Design aus Original-Beschreibung? Brainstorm läuft; drei Design-Kandidaten aus dem 007-Lauf liegen bereit. (b) Emotions-Dosierung der Emotions-Karte — sparsam, nur wo das Original wirklich Emotion zeigt (Viktors Befund: zu viele v3-Labels machen alles kaputt). (c) Take-Länge: Ein-Take-Gesetz vs. Absatz-Takes an Gedanken-Grenzen. (d) Prinzip Clip-vor-Audio (Viktors Ansage): Zeitfenster sind das SOLL, angepasst wird die STIMME (neu würfeln/Tempo), Clips nur leicht — Umsetzung in sprech-watch/Schnitt offen.",
     "Ehrlicher Risiko-Hinweis der KI (Runde 1): Eine gesprochene 1:1-Übersetzung liegt näher am Original als ein Suno-Song — die Verfremdung durch Gesang+Cartoon entfällt bei Real-Footage-Quellen. Das ist Viktors Geschäfts-Entscheid, nicht meiner; der Rahmen mildert mit dem, was er hat (Produkttausch-Strecke, eigene Stimme statt Klon, eigenes Bett statt Original-Ton), und die Rebranding-Erfahrung (DMCA-Fall) gehört in die Waagschale.",
-    "Nebengewinn: Mehrere „bewusst lose“ Bausteine des Generation-Flows werden in dieser Linie tragend — voiceover-narrator-voice-design-prompt (Stimm-Casting) und background-music-suno (Musikbett-Weg b). Lose war ehrlich; jetzt bekommen sie eine Kette."
+    "Nebengewinn: Mehrere „bewusst lose“ Bausteine des Generation-Flows werden in dieser Linie tragend — voiceover-narrator-voice-design-prompt (Stimm-Casting) und background-music-suno (Musikbett-Weg b). Lose war ehrlich; jetzt bekommen sie eine Kette.",
+    "20.08.2026 nach dem ROV-007-Lauf (Use and Break, Runde 1): Die Kette war fest an die Quasi-Linie gebunden (projekte-quasi + brand-quasi). Zwei Läufe hintereinander mussten von Hand in die ROV-Linie umziehen — darum lösen die Knoten „Projekte der Linie“ und „Brand-DB der Linie“ jetzt über datenbanken/linien auf, wie die Singing-Kette seit dem 20.08.2026. Die Custom-Clip-Knoten tragen die Bedingung „Registry: customClips = true“ (bei ROV steht false, sie laufen dort also nicht). OFFEN: Das Registry-Feld workflowDatei zeigt weiter auf die Singing-Kette — welche Kette eine Ad fährt, sagt bis auf Weiteres Viktor am Trigger; Sheet-Routing für Speaking-Rips ist nicht gebaut.",
+    "Umbau nach Viktors Feedback (Use and Break, Runde 2): (1) Ripping Sheet + zweiter Trigger raus — einziger Einstieg ist Viktors MP4. (2) Eigene Speaking-Datenbanken (sp-projekte, sp-brands, sp-learnings) statt der Linien-Registry der Singing-Kette — bewusste Trennung von Suno/Singing. (3) Neue Emotions-Karte: Original-Delivery je Zeile per Gemini-Ohr reverse-engineeren und als v3-Audio-Tags auf die deutschen Zeilen legen (v3 ohne Vorgabe wiederholt/würfelt Emotionen). (4) Sprechspur-Abnahme als ÜBERGANGS-Gate direkt nach dem Prüfer — trainiert den Prüfer, fliegt bei One-Shot-Reife raus. (5) Suno komplett aus der Kette — Musikbett per lokalem Demucs aus dem Original. (6) Alle Geister gebaut: tools/sp (new_sp_project, clip_karte, sprechspur, pruefer, render, abnahme) + Skills emotionskarte/musikbett.",
+    "Runde 3 (Viktors Ansage 20.08.2026 abends, Werkstatt-Chat): Stimm-Casting-Knoten + Stimmen-Entscheid-Gate ersatzlos ENTFERNT („zu viele Gates; ich brauche kein Stimm-Casting“) — Haupt-Kette jetzt Bootstrap → Sprechspur-Bau. Die Stimme kommt allein aus dem Stimmen-Register (Zeile je Brand); wie eine neue Brand-Zeile entsteht, ist offener Brainstorm (siehe OFFENE VIKTOR-ENTSCHEIDE). Der Skill speaking-vsl-stimm-casting bleibt als Handwerkszeug im Schrank liegen, hängt aber an keiner Kette mehr.",
+    "Runde 4 (Viktors Ansage 21.08.2026, Screenshot-Review im AWMS-Graph): (1) Gate Sprechspur-Abnahme heißt jetzt AUDIO-PRÜFUNG — der alte Name beschrieb das Artefakt statt der Tätigkeit. (2) Das Lokalisierungs-Entscheid-Gate ist als eigener Stopp ENTFERNT und in die Audio-Prüfung verschmolzen — ein Stopp statt zwei; die Lokalisierung liefert weiter ihren Befund, gebaut wird mit Empfehlung/Original, entschieden wird am Gate. (3) Die Stimm-Frage kehrt zurück, aber ohne eigenes Gate und ohne Testzeilen-Casting: rund 5 Varianten der GANZEN Sprechspur mit verschiedenen Bibliotheks-Stimmen (Vorauswahl gemessen), Viktor wählt am echten Audio. Ersetzt den Runde-3-Stand Stimme-allein-aus-dem-Register mit offener Wahl-Methode.",
+    "Runde 5 (Viktors Entscheid 02.09.2026): Das Ripping Sheet ist WIEDER der Einstieg — wie bei der Singing-Linie, nur mit Agent-Wahl im Rip-Dialog (🎵 Singing / 🎙 Eleven Labs) VOR der Brand-Wahl. Hebt Punkt (1) aus Runde 2 auf; Punkt (2) bleibt: die Speaking-Kette hat ihre eigenen Datenbanken, das Sheet liest datenbanken/sp-brands/daten.csv (neue Spalte quell_brands) statt der Linien-Registry. Der Auftragstext des Sheets trägt den Speaking-Absatz (Stimme aus dem Register oder 5 Varianten → Audio-Prüfung, Musikbett per Demucs, NNN SP, geteilte Nummern-Serie). Ziel: sofort an echten Projekten weiterbauen (Use and Break) — was noch fehlt, zeigt der erste Sheet-Lauf.",
+    "Namens-Gesetz (Viktors Ansage 02.09.2026, im selben Zug wie die Sheet-Anbindung): Sprech-Projekte tragen das Ketten-Kürzel EL im Namen („ARE 001 EL | 02.09.2026“) und zählen eine EIGENE Nummern-Serie — die frühere geteilte Zählung mit den Suno-Linien ist damit aufgehoben („ich will das mit den Sunos trennen“). Pipeline-Ordner heißt entsprechend „NNN EL“. Alt-Bestand (ROV 006/007, Ordner „NNN SP“, Name ohne EL) bleibt gültig; Sheet, tools/sp/new_sp_project.py und die Export-Zuordnung erkennen beide Formen. Wichtig für jede spätere Änderung: Wer Projekte über die NUMMER zuordnet, muss das EL mitvergleichen — „ARE 001“ und „ARE 001 EL“ existieren gleichzeitig.",
+    "Use and Break ARE 002 EL (04.09.2026, erster Sheet-Lauf): (1) Viktors Befund am Gate: Copy nur auf Deutsch gezeigt — nicht vergleichbar. Ab jetzt EN/DE-Zeilenpaare (Gate-Knoten + Übersetzungs-Skill). (2) Dauer bis zum Gate ~50 min: fünf Stimm-Varianten, 14 Custom-Clips (einer mit drei Versuchen), Vmake, Demucs — Viktor: „passt schon, aber nächstes Mal wissen“. (3) Werkzeug-Befunde: Szenenerkennung 0,30 verschluckt harte Schnitte auf einfarbigen Ads (Frame-Differenz als Ergänzung), Prüfer-Normierung Ziffern/Bindestriche repariert, Steckbrief kennt nur Cartoon-Stil.",
+    "05.09.2026, Viktors Gate-Feedback nach ARE 001 EL (erster Sheet-Lauf): (1) Die Soundeffekte des Originals (Demucs-Rest) sind der Maßstab und bleiben; (2) „Wo ist die Hintergrundmusik?\" — sie war da (Demucs-Rest), aber bei −10 dB unter der Sprechspur doppelt so leise wie im Original (17,6 statt 8,8 dB Abstand); ein Suno-Ersatz wurde von Viktor verworfen („Original-Musik extrahieren\") → Musikbett = Original-Rest im GEMESSENEN Original-Verhältnis, Gemini-Ohr-Prüfung vor jeder „keine Musik\"-Behauptung; (3) Sprechspur „monoton\" → Emotions-Karte kalibriert (5–7 Tags an Wendepunkten statt 1), v3 stability 0,3 statt 0,5 (sprechspur.py --stability). Bausteine: speaking-vsl-musikbett, speaking-vsl-emotionskarte, sprech-watch, tools/sp/sprechspur.py.",
+    "Use and Break ARE 002 EL, Runde 2 (04./05.09.2026): Viktors Befund am Final — Offer aus der Quell-Ad übernommen statt aus dem Areum-Store (3+3 gratis, gratis Versand, bis zu 65 %; keine Nackenmaske, kein 210-€-Wert). INTEGRIERT (Viktors Entscheid 05.09.2026, „nur eine Sache“): das OFFER-GESETZ im Lokalisierungs-Knoten + Store-Doku brand-quasi/Shopify Store/05 Areum/areum-angebot.md. NICHT integriert: Hintergrundmusik-Fallback (Viktor hat das in einem anderen Chat besser gelöst — dessen Lösung gilt) und Sprachfluss-Regel als Workflow-Text (bleibt nur als Referenzpaar im Übersetzungs-Skill). Im Lauf selbst wurde die Copy natürlicher geschrieben und ein Suno-Instrumental als Bett genutzt.",
+    "Use and Break ARE 002 EL, Runde 3 (05.09.2026): Viktors Befund an den CapCut-Captions — „GRATIS VERSAND“ und „BIS ZU 65 % RABATT“ als violette Caption-Boxen über 3D-Szenen, obwohl das Original diese Texte IN der Szene animiert (17–18 s „70% OFF“, „FREE NECK MASK“, „FIRED“). Baustein: Gestaltungs-Text-Gesetz im Captions-Knoten/-Skill (Szene → Custom Clip, Balken → Caption) + §4b im Custom-Clip-Skill (Text im Frame-Edit mitübersetzen, form „text“, Push-in-Fallback bei Kling-Verdopplung).",
+    "Viktors Ansage 05.09.2026 („integriere das in den Workflow, damit du es nächstes Mal richtig machst“): Das Gestaltungs-Text-Gesetz steht jetzt an allen vier Stellen der Kette — Vmake (Textsorten-Liste trennt Szene/Balken), Clip-Karte (Szenen-Text-Clips markieren, form „text“), Custom-Clips (Text im Frame-Edit mitübersetzen, Push-in-Fallback bei Kling-Verdopplung, Bedingung erweitert) und Captions (nur Overlay-Balken). Ein Lauf, der Szenen-Text als Caption ausliefert, verstößt gegen den Workflow.",
+    "Use and Break ARE 007 EL (07.09.2026): Die Quasi-Quelle „Did you know most dark circles aren’t genetic?“ bewarb einen Augen-Balsam-Stick (Volufiline, PDRN, „twist, swipe, tap“) — Areum führt nur die Kollagen-Glow-up-Maske. Das fiel erst am fertigen Transkript auf, nach Server-Buchung, Werkstatt-Kopie und Scribe-Credits. Viktors Ansage: Der Rip-Dialog fragt neben Agent, Brand, Sprache und Musik jetzt auch das ZIEL-PRODUKT ab (Registry: Feld produkte in linien.json / Spalte produkte in sp-brands), der Auftrag trägt es, und der neue Gate-Knoten produkt-abgleich (nach dem Augen-Check, vor Vmake) stoppt mit Warnung, wenn die Quelle ein anderes Produkt bewirbt — Viktor entscheidet weiter/abbrechen. Der Lauf ARE 007 EL wurde abgebrochen und komplett aus der Pipeline entfernt (Projekt-Ordner, Bündel B-021, rip.json).",
+    "Use and Break ARE 010 EL: Custom-Clip-Hintergrund verschwommen (Vmake-Schlieren im Start-Frame, Prüfer sah nur das Produkt) → Hintergrund-Wahrheit + Reparatur-Klausel + Prüfer-Zeile 6; Sprechspur monoton/langsam → Emotions-Karte je Satz, stability 0,25, Daumenregel „Stimme schneller statt Clip langsamer“; Stimm-Vergleich als Varianten-Lauf mit Paket je Stimme.",
+    "Use and Break ARE 010 EL (CapCut-Sichtung): fette CapCut-Captions für statische Overlays sahen aus wie Fremdkörper (lila Box, falsche Größe, verrutscht) → Overlays werden im Schnitt 1:1 nachgebaut (tools/sp/overlays.py), CapCut bekommt nur die Sprech-Untertitel.",
+    "Use and Break ARE 010 EL (Uploader): zwei Exporte unter einem Projektnamen → „doppelt gewählt“. Regel: jede Stimm-Variante ist ein eigenes Projekt mit eigener Nummer + Zusatz „(Stimme <Name>)“; für 010 EL Ausnahme: Sheet + upload.py nehmen „(Stimme X)“-Dateien als Varianten des Basis-Projekts (upload-<stimme>.json).",
+    "Use and Break ARE 004 EL (08.09.2026, Viktors CapCut-Sichtung): (1) Sekunde 8: Custom Clip C006 trug die Vorszene als Geist — Start-Frame stammte aus einer 0,8-s-Überblendung, Kling fror das Doppelbild ein, der Auge-Prüfer (8-Frame-Streifen) ließ es durch → Blenden-Regel (messbar) + Geister-Messung im Prüfer + xfade-Nachbau im Schnitt (custom-clip-production §4/§6/§7). (2) Sekunde 9: Block 2 („Diesen Deal…“) 0,6 s vor die Stadion-Schnittkante gezogen, um tote Luft zu füllen → Schnittkanten-Anker im Planer (sprech-watch, marken_planen.py --kanten). (3) Sekunde 16: Review-Wand (Karten-Scroll) als Kling-Clip aus einem Frame → stand still; Grafik-Clips mit Bewegung werden gemessen und deterministisch nachgespielt (custom-clip-production §4c).",
+    "Use and Break ARE 008 EL (08.09.2026): Viktors Befund „Hintergrundmusik übertönt die Stimme“ — die Messung zeigte, dass die Mischung dem Original in JEDER Größe entsprach (Abstand Stimme→Bett 16,9 vs 17,1 dB K-bewertet in Sprech-Fenstern, leise Silben 13,1 vs 13,0 dB, Ducking 1,2 dB im Original). Ursache: Das Original-Verhältnis ist ein Messwert, das Ohr-Urteil je Marke hängt an der Stimme (TTS trägt anders) — beides gehört in die Kette. Bausteine: tools/sp/bett_pegel.py (neu: K-bewertete Messung in Sprech-Fenstern + Marken-Offset + Pegel-Leiter), sp-brands Spalte bett_offset_db (ARE −4), speaking-vsl-musikbett (Pegel-Abschnitt), Gate Audio-Prüfung (Leiter, Wahl → Offset). Viktors zweiter Wunsch (zwei weitere Stimmen für diesen Lauf) ist bewusst KEIN Baustein — der Varianten-Weg der Kette (capcut_paket --stimme) genügt.",
+    "Use and Break ARE 008 EL, Runde 2 (08.09.2026): Viktors Befund „Hintergrundmusik nicht clean“ — Messung: Demucs-Rest hat im Sprachband 7,0 dB Loch dort, wo die US-Stimme sprach (htdemucs_ft 6,7, mdx_extra 6,6 — Modelle helfen nicht); unter der deutschen Stimme liegt das frei. Gemini-Ohr fiel am Kontroll-Snippet durch (Suno-Instrumental = „leicht phasig“). Bausteine: tools/sp/bett_qualitaet.py (neu), speaking-vsl-musikbett (Sauberkeits-Messung + Nachbau-Weg über quell_rhythmus.py bett + Suno V5 + A/B am Gate). Pegel-Stufe −4 dB von Viktor bestätigt (sp-brands bleibt).",
+    "ARE 008 EL, Runde 2 Entscheid (08.09.2026): Viktor hörte Extrakt (htdemucs_ft) gegen zwei Suno-Nachbauten unter Julis Stimme — „A ist gut“. Die zuvor eingebaute Auto-Regel (Loch ≥ 5 dB → Nachbau) ist damit widerlegt und entfernt; Loch-Messung bleibt Beleg, Nachbau nur auf Zuruf.",
+    "Lip-Sync-Baustein (17.09.2026, Lauf RAN 001 EL, Viktors Entscheid): Knoten lip-sync zwischen Audio-Prüfung und Schnitt, Skill speaking-vsl-lipsync, nur Menschen. Herkunft der Regeln (Blitz-Flecken 8/32 Clips, Hunde-Schäden, fehlende Farbkennzeichnung der kie-Ausgabe) in datenbanken/sp-learnings/learnings.md und feedback_log.md."
   ]
 }

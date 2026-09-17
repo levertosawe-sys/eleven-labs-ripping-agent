@@ -57,10 +57,28 @@ bezahlt; keine ist theoretisch.
 - **Nach 3 Fehlversuchen: Trade-off benennen statt endlos würfeln.** Ein dokumentierter
   Kompromiss am Mensch-Gate ist ehrlicher als eine stille Endlos-Schleife.
 
+## Lip-Sync
+
+- **Nur Menschen.** An 3D-Cartoon-Hunden machte der Lip-Sync die Nase grau und verwaschen, die
+  Schnauze unscharf und die Flasche im Bild doppelt — und das Maul folgte trotzdem dem Original.
+- **Farbblitz oder Blende im Auftrag = Fleck.** In 8 von 32 Sprecherin-Clips lag ein Farbblitz oder
+  eine Schwarz-/Weißblende; dort malte der Lip-Sync eine hautfarbene untere Gesichtshälfte mit harter
+  Kante und färbte den ganzen Clip gelb-oliv (Farbstich 20–28, sauber ≈ 1). Bereiche enden vor dem Blitz.
+- **kie liefert ohne Farbkennzeichnung.** Die YUV-Werte kommen unverändert zurück, aber `color_space`
+  fehlt; ffmpeg liest dann bt601 statt bt709, Hauttöne verschieben sich (Farbstich Ø 3,6 statt 1,0).
+  Kennzeichnung per `h264_metadata` übertragen — bitgleich, kein Neu-Encode.
+- **402 „Credits insufficient" trotz Guthaben**, wenn parallele Aufträge reservieren; „server busy"
+  kostet 0 Credits und geht beim nächsten Versuch durch.
+- **Mund-Ton-Korrelation ist kein Beweis.** Der Original-Mund korrelierte mit dem deutschen Ton so stark
+  wie mit dem englischen — die Fehler fand erst die Sichtprüfung Clip für Clip.
+
 ## Schnitt
 
 - **Verlust-Gate: kein Clip fällt stumm.** Wenn der Schnitt einen Quell-Clip komplett
   verliert, ist das ein Befund, kein Schulterzucken.
+- **Wer Frames als RGB liest und an libx264 schreibt, setzt die Farbmatrix ausdrücklich.** Nur die bt709-Tags zu setzen
+  codiert trotzdem bt601 — gesättigte Farben verschieben sich (gelber Blitz: Blau −4,5). Schreiben mit
+  `-vf scale=out_color_matrix=bt709:out_range=tv`, Lesen mit `-vf scale=flags=accurate_rnd+full_chroma_int` (sonst ~2 Stufen dunkler).
 - **Nach jeder Zeilen-Operation am Ton: Schnitt + Render zwingend NEU.** Der Schnitt
   hängt am Wort-Cache; ein veränderter Ton mit altem Schnitt ist eine kaputte Ad, die
   auf den ersten Blick heil aussieht.
