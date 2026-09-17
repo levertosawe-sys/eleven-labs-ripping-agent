@@ -1,68 +1,110 @@
 ---
 name: vmake-caption-entfernen
-description: "Entfernt eingebrannte Captions/Untertitel/Text aus einem Video per Vmake-API (Task videoscreenclear) — inklusive Schlieren-Kontrolle, Song-Remux und ehrlicher Baubarkeits-Bewertung. Nutzen, wenn Viktor sagt „entferne die Captions/den Text aus dem Video", „die englischen Untertitel müssen weg", „nutze Vmake", oder wenn eine Quell-Ad eingebrannten Text trägt, der die deutschen CapCut-Captions stört."
+description: "Entfernt die eingebrannte Sprech-Untertitelspur aus einem Video per Vmake-API (Task videoscreenclear) — inklusive Schlieren-Kontrolle, Schutz des Gestaltungs-Texts, Song-Remux und ehrlicher Baubarkeits-Bewertung. Nutzen, wenn Viktor sagt „entferne die Captions aus dem Video", „die englischen Untertitel müssen weg", „nutze Vmake", oder wenn eine Quell-Ad eingebrannte Untertitel trägt, die die deutschen CapCut-Captions stören. Endcards, Angebots-Störer und andere Grafik-Typo bleiben dabei stehen — dieser Skill entfernt sie nie."
 ---
 
-# Vmake: eingebrannten Text aus Video entfernen
+# Vmake: die Sprech-Untertitel aus einem Video entfernen
 
-Zweck: Eingebrannte Captions aus einem Video tilgen, ohne Timing anzufassen. Der
-Song/Ton des Projekts bleibt Master: nach einer Render-Bereinigung wird er
-drübergemuxt, nach einer Quell-Bereinigung entsteht er ohnehin frisch im Neu-Render.
+Zweck: Die eingebrannte Sprech-Untertitelspur tilgen, ohne Timing anzufassen und
+ohne den übrigen Bildtext anzurühren. Der Song/Ton des Projekts bleibt Master: nach
+einer Render-Bereinigung wird er drübergemuxt, nach einer Quell-Bereinigung entsteht
+er ohnehin frisch im Neu-Render.
+
+**Vor Schritt 1: das Original sichern.** Die Nachkontrolle (Schritt 4c) und jede
+Reparatur brauchen den unberührten Stand als Vergleich und als Quelle:
+`cp _work/source.mp4 _work/source_original.mp4` (Render-Zweig entsprechend
+`_work/render_original.mp4`). Fehlt die Sicherung, ist ein angetasteter
+Gestaltungs-Text nicht mehr wiederherstellbar.
 
 Werkzeug (ausführen, immer mit `~/.venvs/sa/bin/python3`, Arbeitsverzeichnis =
 `_pipeline/`-Ordner des Projekts — dort landet `vmake_state.json`):
-`tools/vmake/vmake_client.py` (relativ zum Projektstamm)
+`tools/vmake/vmake_client.py` (Pfad relativ zum Projektstamm — dem Ordner, in dem
+`.claude/`, `datenbanken/` und `brands/` nebeneinander liegen)
 Subkommandos: `config` · `remove <datei|url>` · `poll <task_id>` · `download <ziel>`.
 `remove` nutzt fest den Task `videoscreenclear`; der Task-Katalog steht in der
 `config`-Ausgabe (relevant erst, wenn der Client um weitere Tasks erweitert wird).
-Keys: `MT_AK` + `MT_SK` in `~/.config/leichtkraut/.env` (Access + Secret, beide
-nötig — SDK-HMAC-SHA256 signiert jeden Request). `VMAKE_AK`/`VMAKE_SK` werden als
-Alt-Namen weiter akzeptiert. API-Host ist `wapi-skill.vmake.ai`; das früher hier
-genannte `api.vmake.ai` ist eine Altlast mit abgelaufenem Zertifikat — nicht nutzen.
-Stand des Clients: `preflight` und `config` laufen geprüft, `remove`/`poll`/`download`
-fehlt noch der OSS-Upload (der Client sagt beim Aufruf genau, was fehlt).
+Keys: `VMAKE_AK` + `VMAKE_SK` in `~/.config/leichtkraut/.env` (Access + Secret,
+beide nötig — das Verfahren signiert jeden Request).
 
-## Grenze des Verfahrens: gefuellte Flaechen bleiben als Rueckstand
+## Der Auftrag ist eng: NUR die Sprech-Untertitel
 
-`videoscreenclear` ist fuer Wasserzeichen und duenne Untertitel gebaut. Ein
-**gefuelltes Gestaltungs-Element** — ein roter Titelbalken, ein Preis-Stoerer, ein
-Siegel — ueberfordert das Inpainting: Die Buchstaben verschwinden, die FLAECHE
-dahinter bleibt als farbiger Keil oder Streifen stehen.
+Aus einer Quell-Ad wird ausschließlich die **Sprech-Untertitelspur** entfernt.
+**Eingebrannter Gestaltungs-Text bleibt unangetastet** — Endcard, Angebots-Störer
+(„BUY 1 GET 1 FREE", „90-DAY MONEY-BACK GUARANTEE"), Gold-Schilder, Hero-Titel,
+Siegel, Preis-Grafik. Er wird nicht getilgt, nicht abgedeckt, nicht durch eine
+deutsche Fassung ersetzt, auch nicht teilweise.
 
-**Gemessen im QUA-001-Lauf:** Der rot-weisse Hero-Titel (0:00–3,5 s, gemessener
-Eingriffsbereich x 0–718, y 148–394) hinterliess einen roten Keil bei x 4–485,
-y 182–299. Viktors Befund: „die roten Striche muessen auf jeden Fall weg".
+Der Grund ist inhaltlich: Solche Grafik gehört zum Video, nicht zur Untertitelspur.
+**Die Regel gilt unabhängig vom Werkzeug** — auch ein besseres Inpainting würde daran
+nichts ändern.
 
-Daraus zwei Regeln:
+Dazu kommt als Zusatzgrund, warum Versuche zusätzlich schlecht aussehen:
+`videoscreenclear` ist für Wasserzeichen und dünne Untertitel gebaut, nicht für
+gefüllte Flächen. An einem farbigen Balken oder einer großen Typo verschwinden die
+Buchstaben, die FLÄCHE dahinter bleibt als Keil stehen. Und `delogo` oder ein Overlay
+über eine große Fläche zerstört mehr, als es rettet.
 
-1. **Immer die ERSTEN Frames pruefen, nicht nur eine Stichprobe aus der Mitte.**
-   Hero-Titel stehen in Sekunde 0–4 — eine Stichprobe ab Frame 30 sieht sie nie.
-   `ffmpeg -i clean.mp4 -vf "select='lt(n,6)',tile=6x1" -vsync 0 erste.png` und ansehen.
-2. **Rueckstand unter einem Gestaltungs-Element wird ABGEDECKT, nicht wegretuschiert.**
-   Nachtraegliches `delogo` ueber eine grosse Flaeche zerstoert mehr, als es rettet
-   (im Lauf getestet: 718x270 loeschte die halbe Animation). Eine ENGE Box um den
-   Rueckstand plus leichte Glaettung ist die Obergrenze des Vertretbaren — der Rest
-   verschwindet unter dem deutschen Titel, der dort ohnehin hinkommt. Genau deshalb
-   ist „Gestaltungs-Text ersetzen" keine Kuer, sondern die Loesung fuer den Rueckstand.
+**Rote Flaggen — jeder dieser Gedanken heißt STOPP:** „die Endcard ist doch auch
+Text" · „nur diesen einen Störer noch" · „eine enge Box drüber fällt nicht auf" ·
+„auf Deutsch wäre es stimmiger" · „der Rest sieht halb getilgt schlimmer aus, ich
+mache es ganz". Der letzte Gedanke ist die gefährlichste Rationalisierung: Ein
+halb getilgter Störer wird nicht durch vollständiges Tilgen gerettet, sondern durch
+**Wiederherstellen** (siehe Schritt 4c).
+
+**Prüfung trotzdem Pflicht — auch die ERSTEN Sekunden, nicht nur eine Stichprobe aus
+der Mitte.** Hero-Titel stehen in Sekunde 0–4; eine Stichprobe ab Frame 30 sieht sie
+nie. Acht Frames über die ersten vier Sekunden (bei 30 fps):
+`ffmpeg -i _work/vmake_cleaned.mp4 -vf "select='lt(n,120)*not(mod(n,15))',tile=4x2" -vsync 0 /tmp/erste.png`
+Geprüft wird hier nicht, ob der Gestaltungs-Text weg ist, sondern ob er noch **heil**
+ist. Diese Prüfung ist Teil von Schritt 4c.
+
+Bleibt nach zwei Läufen dasselbe Untertitel-Fenster unberührt (Schritt 4b liefert
+identische Zeiten), ist ein dritter Lauf verschwendet: Was Vmake nicht erkennt,
+erkennt es auch beim Wiederholen nicht. Dann bleibt der englische Rest stehen und
+wird im Befund benannt.
 
 ## Vor dem Entfernen: Textsorten trennen
 
-Nicht jeder Text im Bild ist ein Untertitel. Vor dem Vmake-Lauf die Stellen
-sichten und in zwei Listen schreiben:
+Nicht jeder Text im Bild ist ein Untertitel. Vor dem Vmake-Lauf die Stellen sichten und
+in zwei Listen schreiben — eine Datei `_work/gestaltungs-text.md` mit zwei
+Abschnitten, Spalten Zeitfenster (`von`–`bis` in Sekunden) · Originalwortlaut ·
+Box `x,y,w,h` in Pixeln des Quellbilds:
 
-- **Sprech-Untertitel** — klein, unteres Drittel, folgen dem Gesprochenen.
-  Werden entfernt; die deutsche Fassung tritt spaeter an ihre Stelle.
-- **Gestaltungs-Text** — Hero-Titel, grosse farbige Typo, Preis-Stoerer, Endcard.
-  Wird ebenfalls entfernt, aber **er MUSS ersetzt werden** und darf nie einfach
-  fehlen. Ohne Ersatz beginnt die Ad mit einem stummen Bild und verliert ihren
-  Hook. Die Liste wandert als `_work/gestaltungs-text.md` weiter an die Captions
-  (Zeitfenster · Originalwortlaut · Position · deutscher Vorschlag).
+- **Sprech-Untertitel** — klein, unteres Drittel, folgen dem Gesprochenen. Werden
+  entfernt; die Fassung in der Zielsprache tritt später an ihre Stelle — das gilt
+  nur für diese Spur, Gestaltungs-Text wird nie ersetzt. Ihr Bandbereich ist
+  zugleich das Prüfband für Schritt 4b.
+- **Gestaltungs-Text** — Hero-Titel, große farbige Typo, Preis-Störer, Endcard.
+  Bleibt stehen. Die Liste wird trotzdem geführt, aber sie ist eine **Schutzliste**,
+  keine Arbeitsliste: Sie sagt der Nachkontrolle (Schritt 4c), welche Bildbereiche
+  nach dem Lauf unversehrt sein müssen. Sie wandert weder an die Captions noch an den
+  Schnitt.
 
-Erst danach laeuft `remove`.
+Die Position misst man, statt sie zu schätzen: einen Frame als `rgb24` dekodieren, die
+Farbfläche per Schwelle maskieren und die dichten Zeilen/Spalten als Box ausgeben.
+Greift die Schwelle nicht (warmes Bild hinter warmer Typo), die Box am Frame ablesen
+und das im Befund so vermerken — eine abgelesene Box ist brauchbar, eine geratene nicht.
+
+Erst danach läuft `remove`.
+
+## Das Bild nie unnötig neu encodieren
+
+Wird dem bereinigten Video nur eine Tonspur zugefügt, läuft das Video per **`-c:v copy`** —
+Stream-Copy, kein Neu-Encode. Jede zusätzliche h264-Generation frisst zuerst die Farbe,
+sichtbar an gesättigten Rot- und Orangetönen: Sie sind chroma-unterabgetastet (yuv420p)
+und brechen als Erstes in Streifen und Säume auf — genau dort, wo Schmerz-Glow, Blut und
+Warnfarben sitzen. Regel: **Ein Ton-Mux ist kein Grund, das Bild anzufassen.** Nur wenn
+wirklich in die Pixel gegriffen wird (Overlay, Crop, Skalierung), wird encodiert — dann
+mit `-crf 18` oder besser und immer mit den bt709-Tags auf Container-Ebene.
+
+Gegenprobe vor dem Ausliefern: `ffprobe -select_streams v:0 -show_entries stream=nb_frames`
+auf Eingabe und Ausgabe. Gleiche Frame-Zahl UND Stream-Copy = das Bild ist bitgleich, es
+KANN keine neuen Artefakte tragen. Das beantwortet auch die Rückfrage „kommen die Streifen
+von Vmake?" ohne Raterei.
 
 ## Vorgehen
 
-1. **Caption-Stellen des Originals festhalten:** Schlieren-Scan (Schritt 3) einmal auf
+1. **Caption-Stellen des Originals festhalten:** Schlieren-Scan (Schritt 4) einmal auf
    dem UNBEREINIGTEN Video laufen lassen — seine Regionen-Liste (Sekunden-Spannen)
    sind die Caption-Stellen für alle späteren Vorher/Nachher-Vergleiche.
 2. **Welche Datei bereinigen?** Standard: die QUELLE (`_work/source.mp4`), NICHT der
@@ -80,22 +122,67 @@ Erst danach laeuft `remove`.
    Ergebnis: `download _work/vmake_cleaned.mp4`.
 4. **Schlieren-Scan + Sichtung (Pflicht):** Vmakes bekannte Schwäche sind helle
    Karaoke-Highlight-Boxen — dort hinterlässt das Inpainting weiße Leucht-Schlieren.
-   Der Scan dekodiert das ganze Video und rechnet darum auf dem Hetzner-Worker
-   (Zugang, `$WORKER_IP`, `<slug>`, Rüstzeug:
-   `.claude/skills/sa-resync-singing-ad/SKILL.md` §Rechenort):
-   `rsync -az --partial _work/vmake_cleaned.mp4 /Users/yuviktor2004/AWMS/Longform-Singing-VSL-Agent/tools/vmake/schlieren_scan.py root@$WORKER_IP:/work/kollege/<slug>/` →
-   `ssh root@$WORKER_IP 'cd /work/kollege/<slug> && /work/kollege/.venv/bin/python3 schlieren_scan.py vmake_cleaned.mp4'`
-   (Exit 0 = Band ruhig, Exit 1 = Regionen-Liste als `a–b s`-Zeilen; ImportError im
-   Log → fehlendes Paket ins Worker-venv nachinstallieren, siehe §Rechenort
-   Rüstzeug). Dann ANSEHEN —
-   je auffälliger Region UND je 2–3 Original-Caption-Stellen aus Schritt 1:
+   Der Scan dekodiert das ganze Video und läuft mit dem Rechen-venv:
+   `~/.venvs/sa/bin/python3 tools/vmake/schlieren_scan.py <video.mp4> 30`
+   (Exit 0 = Band ruhig, Exit 1 = Regionen-Liste als `a–b s`-Zeilen; ImportError =
+   fehlendes Paket im venv nachinstallieren). Der Scan ist ein VORFILTER: Er misst
+   Helligkeit und verwechselt darum helle Produkt-Shots mit Schlieren — die gemeldeten
+   Regionen werden angesehen, nicht geglaubt. Dann ANSEHEN — je auffälliger Region UND
+   je 2–3 Original-Caption-Stellen aus Schritt 1:
    `ffmpeg -ss <Sekunde> -i _work/vmake_cleaned.mp4 -frames:v 1 -vf "crop=iw:ih*0.30:0:ih*0.54,scale=iw*2:ih*2" /tmp/check_<Sekunde>.png`
    und die PNGs mit dem Read-Werkzeug öffnen. So beantwortet EIN Blick beides:
    Text weg? Schlieren da?
-5. **Befund ehrlich bewerten:** Text weg + Band ruhig → sauber, weiter. Text weg, aber
-   Leucht-Schlieren → Viktor die Wahl zeigen (überdecken lassen / Quelle-zuerst-Weg /
-   lokale Nachbearbeitung, als A/B-Varianten) — nicht still durchwinken. Text NICHT
-   weg → Task einmal neu einreichen; bleibt er, Befund mit Crops an Viktor.
+
+4b. **Rest-Karten messen statt schätzen.** Ob wirklich alles weg ist, entscheidet nicht
+   der Blick auf drei Stichproben, sondern der Vergleich Frame für Frame: Wo Vmake
+   gearbeitet hat, unterscheidet sich das Caption-Band vom Original; wo es NICHTS getan
+   hat, ist der Unterschied null — und dort steht das englische Wort noch. Beide Videos
+   klein dekodieren (`scale=180:320`, `-pix_fmt gray`), je Frame den mittleren Betrag der
+   Differenz im Band y 64–86 % rechnen und die Frames mit Differenz < 0,6 zu Zeit-Fenstern
+   clustern. Ausgabe: Zahl der unberührten Frames + die Fenster in Sekunden. Diese Fenster
+   sind der Befund für Schritt 5 — mit Sekunden, nicht mit „sieht sauber aus".
+
+4c. **Gestaltungs-Text auf Unversehrtheit prüfen (Pflicht).** Je Eintrag der
+   Schutzliste aus `_work/gestaltungs-text.md` einen Frame aus der Mitte seines
+   Zeitfensters ziehen — aus `_work/vmake_cleaned.mp4` UND aus dem gesicherten
+   Original — und beide mit dem Read-Werkzeug nebeneinander ansehen:
+   ```bash
+   ffmpeg -y -v error -ss <sekunde> -i _work/vmake_cleaned.mp4 -frames:v 1 -vf "scale=400:-1" /tmp/g_neu.png
+   ffmpeg -y -v error -ss <sekunde> -i _work/source_original.mp4 -frames:v 1 -vf "scale=400:-1" /tmp/g_alt.png
+   ```
+   Unversehrt = der Text ist vollständig lesbar und die Fläche dahinter trägt keinen
+   Keil oder Schleier. Gegenprobe in Zahlen, damit das nicht am Geschmack hängt:
+   mittlere Pixeldifferenz alt↔neu INNERHALB der Schutzbox — unter 1,0 (Graustufe
+   0–255) hat Vmake dort nichts angefasst, darüber ansehen und entscheiden. Ist alles
+   heil, ist nichts zu tun — genau so soll es sein.
+
+   **Angetastet (Buchstaben teilweise weg, Fläche verwaschen) → wiederherstellen,
+   nicht fertig tilgen.** Der Original-Bildbereich wird aus dem gesicherten Original
+   zurückkopiert, nur im Zeitfenster und nur in der Box der Schutzliste:
+   ```bash
+   ffmpeg -y -i _work/vmake_cleaned.mp4 -i _work/source_original.mp4 -filter_complex \
+     "[1:v]crop=<w>:<h>:<x>:<y>[o];[0:v][o]overlay=<x>:<y>:enable='between(t,<von>,<bis>)'[v]" \
+     -map "[v]" -map 0:a? -c:v libx264 -crf 18 -preset slow -pix_fmt yuv420p -c:a copy \
+     -color_primaries bt709 -color_trc bt709 -colorspace bt709 -color_range tv \
+     _work/vmake_repariert.mp4
+   ```
+   Vorbedingung: Beide Eingänge müssen dieselbe Auflösung und fps haben (Vmake
+   re-encodiert — einmal `ffprobe` auf beide). Weichen sie ab, kein Overlay, sondern
+   Befund an Viktor.
+   Danach `vmake_repariert.mp4` → `_work/vmake_cleaned.mp4`, Frame-Zahl gegenprüfen
+   (`ffprobe -count_frames`, muss gleich bleiben) und den Eingriff im Befund nennen.
+   Der Re-Encode ist hier unvermeidlich, weil in die Pixel gegriffen wird — deshalb
+   `-crf 18` und die bt709-Tags.
+
+5. **Befund ehrlich bewerten:** Untertitel weg + Band ruhig + Gestaltungs-Text heil
+   → sauber, weiter. Untertitel weg, aber Leucht-Schlieren → den betroffenen Bereich
+   aus dem gesicherten Original zurückkopieren (Verfahren wie 4c) und den Eingriff im
+   Befund nennen; überdeckt wird nichts. Bleibt die Schliere danach sichtbar, Viktor
+   den Befund mit Crops zeigen statt still durchzuwinken. Untertitel NICHT weg → Task
+   einmal neu einreichen;
+   liefert Schritt 4b danach dieselben unberührten Fenster, ist es kein Zufall —
+   Befund mit Crops UND Sekunden an Viktor, und der englische Rest bleibt stehen
+   statt in einen dritten Vmake-Lauf zu gehen.
 6. **Weiterverarbeiten je Zweig:**
    - **Quelle bereinigt:** Original sichern als `_work/source_original.mp4`, dann
      `vmake_cleaned.mp4` → `_work/source.mp4`. Frame-Zahl muss stimmen:
@@ -124,26 +211,8 @@ Erst danach laeuft `remove`.
    A/V-Sync per Kreuzkorrelation Song↔Mux-Audio an ≥3 Zeitpunkten (soundfile +
    numpy.correlate auf 2-s-Fenstern; Offset ~0 ms erwartet); /watch-Stichprobe an den
    Caption-Stellen aus Schritt 1. Verbrauch buchen: eine Zeile an
-   `/Users/yuviktor2004/AWMS/.usage/direkt.jsonl` anhängen, Format:
+   `/root/AWMS/.usage/direkt.jsonl` anhängen, Format:
    `{"ts":"<ISO-Zeit>","workflow":"<Workflow-Name>","anbieter":"vmake","menge":<Anzahl Tasks>,"notiz":"<Kurzbeschreibung>"}`.
-
-## Das Bild nie unnoetig neu encodieren
-
-Wird dem bereinigten Video nur eine Tonspur zugefuegt, laeuft das Video per
-**`-c:v copy`** — Stream-Copy, kein Neu-Encode. Jede zusaetzliche Generation
-h264 frisst zuerst die Farbe, und zwar sichtbar an gesaettigten Rot- und
-Orangetoenen: sie sind chroma-unterabgetastet (yuv420p) und brechen als Erstes
-in Streifen und Saeume auf. Genau da faellt es dem Menschen auf, weil
-Schmerz-Glow, Blut und Warnfarben in diesen Ads ueberall vorkommen.
-
-Regel: **Ein Ton-Mux ist kein Grund, das Bild anzufassen.** Nur wenn wirklich
-in die Pixel gegriffen wird (Overlay, Crop, Skalierung), wird encodiert — dann
-mit `-crf 18` oder besser und immer mit den bt709-Tags auf Container-Ebene.
-
-Gegenprobe vor dem Ausliefern: `ffprobe -select_streams v:0 -show_entries
-stream=nb_frames` auf Eingabe und Ausgabe. Gleiche Frame-Zahl UND Stream-Copy =
-das Bild ist bitgleich, es KANN keine neuen Artefakte tragen. Das beantwortet
-auch die Rueckfrage „kommen die Streifen von Vmake?" ohne Raterei.
 
 ## Gotchas
 

@@ -122,6 +122,32 @@ def gid_holen(conf):
     return g
 
 
+# Zustandsdatei im Arbeitsverzeichnis (dem _pipeline/-Ordner des Projekts) — sie
+# traegt task_id und Ergebnis-URLs, damit `poll` und `download` einen abgebrochenen
+# Lauf fortsetzen koennen, ohne neu hochzuladen.
+STATE = os.path.join(os.getcwd(), "vmake_state.json")
+
+
+def zustand_lesen():
+    try:
+        return json.load(open(STATE)) if os.path.exists(STATE) else {}
+    except (OSError, ValueError):
+        return {}
+
+
+def zustand_schreiben(st):
+    try:
+        json.dump(st, open(STATE, "w"), ensure_ascii=False, indent=1)
+    except OSError:
+        pass
+
+
+def zustand_merken(**felder):
+    st = zustand_lesen()
+    st.update(felder)
+    zustand_schreiben(st)
+
+
 def config():
     return wapi("/skill/config.json", {"gid": "", "version": "v1.0.0"})
 
@@ -132,15 +158,54 @@ def strategie(conf, art):
     host = regionen.get("cn-north-4") or next(iter(regionen.values()), None)
     if not host:
         raise SystemExit("Keine Region in der Server-Konfiguration.")
-    typ = (conf.get("algorithm") or {}).get("token_policy_type", "mtai")
+    algo = conf.get("algorithm") or {}
+    # Der Server trennt die Policy inzwischen je Art (upload/ai); faellt auf den
+    # frueheren Einzelwert zurueck, verhaelt sich dort also unveraendert.
+    typ = ((algo.get("token_policy_types") or {}).get(art)
+           or algo.get("token_policy_type", "mtai"))
     antwort = signed("GET", f"https://{host}/ai/token_policy?type={typ}",
                      {"Host": host, "User-Agent": USER_AGENT})
     daten = antwort["data"]["mtai"][art]
     return daten[daten["order"][0]]
 
 
+def oss_put(policy, datei, content_type="video/mp4"):
+    """Rueckfall ohne Fremd-Lib: Datei per OSS-V1-Signatur (HMAC-SHA1, STS-Token) hochladen."""
+    import email.utils
+    from urllib.parse import urlparse
+    c = policy["credentials"]
+    ak, sk, token = c["access_key"], c["secret_key"], c.get("session_token", "")
+    bucket, key = policy["bucket"], policy["key"]
+    wirt = urlparse(policy["url"] if "//" in policy["url"] else "https://" + policy["url"]).netloc
+    if wirt.startswith(bucket + "."):
+        wirt = wirt[len(bucket) + 1:]
+    datum = email.utils.formatdate(usegmt=True)
+    kopf_kanon = f"x-oss-security-token:{token}\n" if token else ""
+    zu_signieren = f"PUT\n\n{content_type}\n{datum}\n{kopf_kanon}/{bucket}/{key}"
+    sig = base64.b64encode(hmac.new(sk.encode(), zu_signieren.encode(), hashlib.sha1).digest()).decode()
+    inhalt = open(datei, "rb").read()
+    kopf = {"Host": f"{bucket}.{wirt}", "Date": datum, "Content-Type": content_type,
+            "Authorization": f"OSS {ak}:{sig}", "Content-Length": str(len(inhalt))}
+    if token:
+        kopf["x-oss-security-token"] = token
+    anfrage = urllib.request.Request(f"https://{bucket}.{wirt}/{key}", data=inhalt,
+                                     method="PUT", headers=kopf)
+    try:
+        with urllib.request.urlopen(anfrage, timeout=600) as r:
+            if r.status not in (200, 203):
+                raise SystemExit(f"OSS-Upload fehlgeschlagen: HTTP {r.status}")
+    except urllib.error.HTTPError as e:
+        raise SystemExit(f"OSS-Upload fehlgeschlagen: HTTP {e.code} {e.read().decode('utf-8','replace')[:300]}")
+    _log("Upload fertig (Rueckfall ohne SDK).")
+    return policy["data"]
+
+
 def hochladen(policy, datei):
-    import alibabacloud_oss_v2 as oss
+    try:
+        import alibabacloud_oss_v2 as oss
+    except ImportError:
+        # Das SDK liegt nicht in jedem venv — der Signatur-Rueckfall braucht keins.
+        return oss_put(policy, datei)
     from urllib.parse import urlparse
     c = policy["credentials"]
     cfg = oss.config.load_default()
@@ -170,7 +235,10 @@ def entfernen(datei, ziel):
         raise SystemExit("Task 'videoscreenclear' steht in der Server-Konfiguration nicht zur Verfuegung.")
     gid = gid_holen(conf)
 
-    medien_url = hochladen(strategie(conf, "upload"), datei)
+    if str(datei).startswith(("http://", "https://")):
+        medien_url = datei          # schon im Netz — kein zweiter Upload
+    else:
+        medien_url = hochladen(strategie(conf, "upload"), datei)
 
     _log("Kontingent pruefen (consume) …")
     consume = wapi("/skill/consume.json",
@@ -195,6 +263,7 @@ def entfernen(datei, ziel):
     if daten.get("status") == 9:
         task_id = str(daten["result"]["id"]).strip()
         _log(f"Asynchron angenommen, task_id={task_id}")
+        zustand_merken(task_id=task_id)
         antwort = pollen(task_id, ai)
     return abliefern(antwort, ziel)
 
@@ -237,6 +306,17 @@ def _urls_finden(objekt):
         direkt = (objekt.get("result") or {}).get("urls")
         if direkt:
             return list(direkt)
+    if isinstance(objekt, dict):
+        # Rueckfall: manche Tasks liefern die Datei in media_info_list[].media_data
+        ergebnis = objekt.get("result") if isinstance(objekt.get("result"), dict) else {}
+        for liste in (ergebnis.get("media_info_list"),
+                      (ergebnis.get("data") or {}).get("media_info_list") if isinstance(ergebnis.get("data"), dict) else None,
+                      (ergebnis.get("mtlab_res") or {}).get("media_info_list") if isinstance(ergebnis.get("mtlab_res"), dict) else None):
+            if isinstance(liste, list):
+                aus_liste = [e.get("media_data") for e in liste
+                             if isinstance(e, dict) and str(e.get("media_data", "")).startswith("http")]
+                if aus_liste:
+                    return aus_liste
     treffer = []
     if isinstance(objekt, dict):
         for k, v in objekt.items():
@@ -257,21 +337,27 @@ def abliefern(antwort, ziel):
         raise SystemExit("Keine Ergebnis-URL in der Antwort gefunden.")
     url = urls[0]
     _log(f"Ergebnis: {url[:90]}…")
+    zustand_merken(output_urls=list(urls))
     if ziel:
-        Path(ziel).parent.mkdir(parents=True, exist_ok=True)
-        with urllib.request.urlopen(url, timeout=600) as q, open(ziel, "wb") as z:
-            while True:
-                brocken = q.read(1 << 20)
-                if not brocken:
-                    break
-                z.write(brocken)
-        _log(f"Geladen nach {ziel} ({os.path.getsize(ziel)/1048576:.1f} MB)")
+        herunterladen(url, ziel)
     return url
+
+
+def herunterladen(url, ziel):
+    Path(ziel).parent.mkdir(parents=True, exist_ok=True)
+    with urllib.request.urlopen(url, timeout=600) as q, open(ziel, "wb") as z:
+        while True:
+            brocken = q.read(1 << 20)
+            if not brocken:
+                break
+            z.write(brocken)
+    _log(f"Geladen nach {ziel} ({os.path.getsize(ziel)/1048576:.1f} MB)")
+    return ziel
 
 
 def main():
     p = argparse.ArgumentParser(description="Vmake — Captions aus Video entfernen")
-    p.add_argument("befehl", choices=["preflight", "config", "remove", "poll"])
+    p.add_argument("befehl", choices=["preflight", "config", "remove", "poll", "download"])
     p.add_argument("wert", nargs="?")
     p.add_argument("--out", default=None, help="Zieldatei fuer das bereinigte Video")
     a = p.parse_args()
@@ -285,12 +371,20 @@ def main():
         print(json.dumps(config(), indent=2, ensure_ascii=False))
     elif a.befehl == "remove":
         if not a.wert:
-            raise SystemExit("Aufruf: remove <datei> [--out ziel.mp4]")
+            raise SystemExit("Aufruf: remove <datei|url> [--out ziel.mp4]")
         entfernen(a.wert, a.out)
     elif a.befehl == "poll":
         if not a.wert:
             raise SystemExit("Aufruf: poll <task_id>")
         abliefern(pollen(a.wert), a.out)
+    elif a.befehl == "download":
+        ziel = a.wert or a.out
+        if not ziel:
+            raise SystemExit("Aufruf: download <ziel.mp4>")
+        urls = zustand_lesen().get("output_urls") or []
+        if not urls:
+            raise SystemExit(f"Keine output_urls in {STATE} — erst remove oder poll laufen lassen.")
+        herunterladen(urls[0], ziel)
 
 
 if __name__ == "__main__":

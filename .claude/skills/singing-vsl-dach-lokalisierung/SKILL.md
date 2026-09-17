@@ -3,12 +3,18 @@ name: singing-vsl-dach-lokalisierung
 description: Eine ins Deutsche übersetzte (US-)Ad-Copy für den DACH-Markt (Deutschland, Österreich, Schweiz) aus der Sicht der Avatarin (der Zielkäuferin, wie die Copy sie zeichnet) prüfen — Ausgabe ist ein Befund in Stichpunkten für Viktors Entscheid, keine umgeschriebene Copy. Nutzen, wenn nach einer Übersetzung „lokalisieren", „Lokalisierung", „DACH", „passt das für unseren Markt?" fällt oder Viktor Feedback will, was an einer US-stämmigen Copy für DACH nicht funktioniert.
 ---
 
-**`<projekte-db>`** steht in diesem Skill für die Projekte-Datenbank der
-Linie: `datenbanken/projekte-lymphoria` (Ziel-Brand LEI - Leichtkraut) oder
-`datenbanken/projekte-quasi` (Ziel-Brand QUA - Quasi). Der Rip-Auftrag nennt
-den Ordner ausdrücklich; fehlt er, entscheidet die Ziel-Brand des Projekts.
-`datenbanken/projekte` (ohne Zusatz) ist eingefrorener Alt-Bestand — dort
-entsteht nie ein neues Projekt.
+**`<projekte-db>`** steht in diesem Skill für die Projekte-Datenbank der LINIE, die
+dieser Lauf fährt. Aufgelöst wird sie über die Registry `datenbanken/linien/linien.json`
+(Feld `projektDb` der Zeile, z. B. `datenbanken/projekte-yuri`); welche Linie gilt, sagt
+der Rip-Auftrag, sonst Viktor am Trigger. Nie aus Gewohnheit eine Linie annehmen —
+es entscheidet die Quell-Brand des Videos (Packshot, Marke im Bild, Page-Farm-Register
+der Brand-DBs). `datenbanken/projekte` (ohne Zusatz) ist eingefrorener Alt-Bestand —
+dort entsteht nie ein neues Projekt.
+
+**Ausnahme Sprech-Kette:** Trägt der Projekt-Ordner das Kürzel `EL` und liegt in
+`datenbanken/sp-projekte` (z. B. `YUR 003 EL | 06.09.2026`), fährt der Lauf die
+ElevenLabs-Kette. Dann ist `<projekte-db>` = `datenbanken/sp-projekte`, und die
+Linien-Registry gilt für den Projekt-Ort nicht.
 
 # Singing VSL DACH Lokalisierung
 
@@ -47,32 +53,50 @@ neueste und das kurz dazusagen) oder direkt im Chat. Liegt beides nicht vor,
 die Übersetzung von Viktor erbitten und stoppen.
 
 **Pflicht-Input Brand-Datenbank (vor dem Befund lesen):** Die Ziel-Brand steht
-im `brand:`-Feld der `karte.md` des Projekt-Ordners (z. B. `LEI - Leichtkraut`);
-ihre Wissensdatenbank liegt unter `/root/AWMS/datenbanken/brand-<name-klein>/`
-(LEI - Leichtkraut → `brand-leichtkraut`, QUA - Quasi → `brand-quasi`). Dort in
-dieser Reihenfolge:
+im `brand:`-Feld der `karte.md` des Projekt-Ordners (z. B. `LEI - Leichtkraut`).
+Wo ihre Wissensdatenbank liegt, sagen zwei Register — welches gilt, hängt an der
+Kette, die diesen Lauf fährt: Die Singing-Kette löst über das Feld `brandDb` der
+Zeile dieser Linie in `datenbanken/linien/linien.json` auf, die Speaking-Kette über
+die Spalte `brand_db` der Zeile dieser Brand in `datenbanken/sp-brands/daten.csv`.
+Beide zeigen auf dieselben Brand-Datenbanken (z. B. `datenbanken/brand-yuri`); liegt
+das Projekt in `datenbanken/sp-projekte`, gilt das Speaking-Register.
+Dort in dieser Reihenfolge:
 1. `lokalisierungs-log.md` — die Betriebsregeln stehen IN der Datei und gelten
    (Muster mit zwei gleichen Entscheidungen hintereinander werden angewendet
    statt gefragt; einmal Entschiedenes wird beim Fragen mitgenannt).
 2. `Shopify Store/_STORE-INDEX.md` (+ verlinkte Seiten-MDs) — der Store ist der
-   Maßstab: Ads müssen zu ihm passen.
+   Maßstab: Ads müssen zu ihm passen. Hat die Brand-Datenbank keinen
+   `Shopify Store/`-Ordner, entfällt die Prüf-Dimension „Store-Abgleich"; das
+   gehört in den Befund-Kopf, damit niemand sie für stillschweigend bestanden hält.
 3. `Research Ansammlung/_INDEX.md` — vorhandenes Zielgruppen-Wissen nutzen;
    fehlt eine Antwort, die der Befund braucht: researchen und als neues Doc +
    Index-Zeile in die Ansammlung zurückschreiben (Research-first-Regel der
    Brand-DATENBANK.md).
+4. `kundensprache-de.md` — die belegten Wörter der deutschen Zielgruppe, falls
+   die Datei existiert; geprüft wird damit in der Prüf-Dimension „Kundensprache".
+   Hat die Brand-Datenbank die Datei nicht, entfällt diese Dimension ersatzlos.
 Fehlt die Brand-Datenbank ganz (neue Brand), das offen im Befund-Kopf sagen und
 ohne Store-Abgleich arbeiten — nicht raten.
 
 Enthält die Datei den Abschnitt „Anmerkungen an die Lokalisierung", ist er
 Pflicht-Input: Jede Anmerkung bekommt einen Platz im Befund — in ihrer
 passenden Rubrik; fällt sie in keine Prüf-Dimension, in die Entscheidungen.
-Vier Ausnahmen: Anmerkungen zu Währungs-Beträgen fließen in die automatische
+Fünf Ausnahmen: Anmerkungen zu Währungs-Beträgen fließen in die automatische
 Euro-Umstellung (Prüf-Dimension „Stehende Entscheidung: Währung") statt in den
 Befund; Anmerkungen zur Anrede gehen in die stehende Anrede-Entscheidung
 (Prüf-Dimension „Stehende Entscheidung: Anrede") statt in den Befund; rein
 rechtliche Anmerkungen und reine Wirkungs-Bedenken entfallen ersatzlos
 (Kriterien in der Prüf-Dimension „Rechtliches und Wirkungs-Bedenken sind kein
-Befund-Inhalt").
+Befund-Inhalt"); `Kundensprache:`-Anmerkungen protokollieren einen bereits
+vollzogenen Wortebenen-Tausch und werden als EINE Sammelzeile unter „Geprüft,
+passt" ausgewiesen (`Kundensprache: <Anzahl> Wörter getauscht — <je Tausch: R-Nummer
+(Wort, M:SS)>`) statt einzeln in die Entscheidungen — sonst wächst jede Copy mit
+vielen Tauschen zu einem Gate, das Viktor nicht mehr lesen kann. Wort und
+Zeitstempel gehören in die Zeile, weil dieselbe R-Nummer mehrere Wörter belegen
+kann und dasselbe Wort an mehreren Stellen steht; ohne sie ist ein gekippter Tausch
+nicht auffindbar. Kippen kann Viktor sie trotzdem, den Wortlaut hält die
+Übersetzungs-Datei. `Kundensprache-Lücke:`-Anmerkungen gehen dagegen in die
+Prüf-Dimension „Kundensprache".
 
 ## Das Gate: erst Befund, dann Entscheid, dann erst Änderungen
 
@@ -88,8 +112,12 @@ brauchen (Schweigen = sie gelten; ein Einwand per Nummer kippt sie). Auch nicht:
 Anpassung, wenn (a) ein harter Fakten-/Logik- oder Store-Bruch vorliegt
 (Widerspruch Copy ↔ Store-Doku, unmöglicher Anlass, kaputter Bezug) ODER
 (b) das lokalisierungs-log der Brand dieselbe Frage-Art bereits gleich
-entschieden hat. Alles andere — jeder Punkt mit echtem Ermessensspielraum —
-ist eine Entscheidung. Im Zweifel Entscheidung, nie Anpassung.
+entschieden hat ODER (c) ein Wort der Copy hat in der `kundensprache-de.md` der
+Brand ein belegtes Kundenwort gleicher Bedeutung, und der Tausch lässt Satzbau,
+Sinn und Zeilenlänge unverändert. Alles andere — jeder Punkt mit echtem
+Ermessensspielraum — ist eine Entscheidung. Im Zweifel Entscheidung, nie
+Anpassung; für (c) ist das kein Ermessen, weil die Datei das Wort und seinen
+Beleg vorgibt — fehlt dort der Beleg, ist es kein Fall von (c).
 
 Rote Flagge: Du tippst gerade am Copy-Text statt am Befund → stoppen, zurück
 zum Befund. Der Grund für die Härte: Viktor liest die Copy selbst noch einmal
@@ -101,7 +129,7 @@ mehr sieht, was Original war und was Eingriff.
 Jeden Punkt der Copy dagegen halten. Für eigene Funde ist diese Liste
 abschließend — was in keine Dimension fällt, ist Geschmack und bleibt
 unangetastet (Anmerkungen aus der Übersetzung werden dagegen immer gelistet,
-mit den zwei Ausnahmen aus „Eingabe"):
+mit den fünf Ausnahmen aus „Eingabe"):
 
 - **Store-Abgleich (Pflicht-Dimension — der Store ist der Maßstab):** Jeden
   Produkt-Fakt der Copy gegen die `Shopify Store/`-Doku der Ziel-Brand halten:
@@ -157,7 +185,7 @@ mit den zwei Ausnahmen aus „Eingabe"):
   2. Avatar-Check: Löst derselbe Anker diese Funktion auch bei der Avatarin
      aus — mit ihrem Wissen, nicht mit deinem? Erst aus dem eigenen Weltwissen
      begründen; bleibt es Spekulation, research:
-     `python3 /Users/yuviktor2004/AWMS/_research/officialquasi-dach/ask_perplexity.py sonar-pro "<Frage>"`
+     `python3 /root/AWMS/_research/officialquasi-dach/ask_perplexity.py sonar-pro "<Frage>"`
      — die Frage nennt die Avatarin-Demografie + den Anker und fragt Bekanntheit
      und Assoziation in dieser Gruppe ab. Bricht der Helfer ab (Datei fehlt,
      Key fehlt, HTTP-Fehler): dieselbe Frage über das WebSearch-Tool. Liefert auch das
@@ -169,9 +197,81 @@ mit den zwei Ausnahmen aus „Eingabe"):
      anderer internationaler Anker sein (die Reichen-Funktion erfüllen für
      DACH oft Monaco oder St. Moritz besser als ein US-Vorort) oder eine
      funktionale Umschreibung („eine der reichsten Familien der Stadt").
-  Nie mechanisch übersetzen (US-Stadt → deutsche Stadt): Der wörtliche
-  Geografie-Tausch zerstört die Funktion, wenn die Avatarin mit dem Ersatz-Ort
-  etwas anderes verbindet (Frankfurt = Banken, nicht Beauty-Reichtum).
+  Signal-Anker nie mechanisch übersetzen (US-Stadt → deutsche Stadt): Der
+  wörtliche Geografie-Tausch zerstört die Funktion, wenn die Avatarin mit dem
+  Ersatz-Ort etwas anderes verbindet (Frankfurt = Banken, nicht
+  Beauty-Reichtum).
+  **Alltags-Anker sind die Gegenklasse und werden immer ersetzt.** Ein
+  Alltags-Anker ist ein Ort oder Laden aus dem eigenen Leben der Avatarin: der
+  Supermarkt, in dem sie einkauft, die Drogerie mit dem Regal, die Stadt, in der
+  sie wohnt, die Herkunft der Pillen in diesem Regal. Seine Funktion ist
+  gelebte Selbstverständlichkeit („das könnte ich sein, in meinem Laden") — und
+  die kann ein fremder Name per Definition nicht erfüllen, auch wenn die
+  Avatarin ihn aus Filmen kennt. Wiedererkennen ist nicht Erleben: Sie weiß, was
+  Walmart ist, aber sie war nie dort, und der Satz verrät sich als Übersetzung.
+  Darum stehen Alltags-Anker als **Anpassung** im Befund, nie als Entscheidung
+  mit „Original lassen" — die deutsche Entsprechung ist nicht die Frage, sie ist
+  die Antwort:
+
+  | Alltags-Anker der Quelle | eingesetzt wird (Default zuerst) |
+  |---|---|
+  | Supermarkt-Kette (Walmart, Target, Costco) | Lidl; passt die Story-Region besser zu einer anderen, dann Aldi, Rewe, Edeka oder Kaufland |
+  | Supplement-/Drogerie-Kette (GNC, Vitamin Shoppe, CVS) | „jeder Supplement-Shop"; nur wenn die Zeile einen Laden zum Betreten braucht, dm |
+  | Herkunft im Satz („US Supplements", „amerikanische Tabletten") | „deutsche Supplements" (parallel gebaut zum Original) |
+  | Einkaufs- oder Weg-Ort der Story (Wohnort, Nachbarschaft, Bundesstaat) | die ortlose Fassung („eine Klinik zwei Städte weiter"); eine benannte deutsche Stadt nur, wenn die Zeile den Ort wirklich braucht |
+  | Alltags-Maße (Meilen, Fuß, Pfund, Gallonen) | Kilometer, Meter, Kilo, Liter — mit glatter Zahl wie bei der Währung, nicht exakt umgerechnet |
+
+  Die Liste ist nicht abschließend: Entscheidend ist der Test „kommt dieser Ort
+  im Alltag der Avatarin wirklich vor?", nicht ob er auf der Liste steht. Für
+  Alltags-Maße gilt sie auch dann, wenn die Avatarin über kein Fakt stolpert —
+  das ist die Ausnahme von der Maß-Formate-Regel der Dimension Fakten und
+  Angaben. **Beträge bleiben außen vor:** Währung fällt unter die stehende
+  Entscheidung Währung und taucht im Befund nicht auf, auch nicht als Alltags-Anker.
+  **Zugehörigkeits-Aussagen sind keine Alltags-Anker.** Sagt die Copy nicht, WO
+  jemand einkauft, sondern WER er ist („alle andalusischen Männer über 60",
+  „bei uns im Süden"), ändert ein Ortstausch die Erzählstimme und nicht die
+  Kulisse — solche Stellen gehen als **Entscheidung** in den Befund, mit der
+  ortlosen Fassung („Männer über 60, die ich kenne", „hier bei uns") als
+  Empfehlung. Trägt ein Ort dagegen Weg-Aufwand oder Fach-Autorität („dafür
+  fuhr ich 30 Meilen"), läuft er über die Funktions-Analyse dieser
+  Prüf-Dimension, nicht über die Tabelle.
+  **Kippt Viktor eine Alltags-Anker-Anpassung**, gilt sein Wort wie überall —
+  aber nicht als „Original lassen" ohne Wortlaut: dann seinen eigenen Wortlaut
+  erfragen (Popup mit der betroffenen Zeile) und die Entscheidung als eigene
+  Zeile ins `lokalisierungs-log.md` schreiben, damit der nächste Lauf sie kennt.
+  **Diese Regel schlägt das Log.** Trägt das `lokalisierungs-log.md` der Brand
+  für einen Alltags-Anker ein Muster „bleibt Original", wird es nicht angewendet
+  — ein Muster kann eine Abkürzung sein, aber keine Regel aufheben. Im
+  Abschluss-Bericht steht dann eine Zeile „Log-Muster <Punkt> nicht angewendet:
+  Alltags-Anker".
+  **Ein anderes Ausland ist keine Lokalisierung.** Trägt die Quelle spanische
+  oder italienische Orte, werden auch die deutsch — sonst wandert der
+  Fremdheits-Effekt nur, statt zu verschwinden. **Figurennamen bleiben dagegen
+  bei ihrer Dimension:** Sie sind Entscheidungen mit „Original lassen" als
+  Option (Prüf-Dimension Figuren-Namen), weil ein Name die Figur benennt und
+  nicht ihre Umgebung — ein Miguel darf in Deutschland leben. Ein Name wird nur
+  dann zum Alltags-Anker, wenn die Zeile ihn als Herkunfts-Aussage benutzt
+  („typisch für uns Andalusier").
+  **Herkunftsangaben werden als Ganzes geprüft, nicht nur ihr Substantiv.** Wer
+  bei „voller US Supplements" nur fragt, ob „Supplements" das richtige Wort ist,
+  übersieht das Land davor. Darum vor dem Schreiben des Befunds ausführen:
+  `python3 scripts/anker_scan.py <projekte-db>/<projekt>/<slug>-uebersetzung-<JJJJ-MM-TT>.md`
+  — findet Ketten-Namen, Herkunfts-Bauteile, fremde Währung und Maßeinheiten
+  zeilengenau, damit die Suche nicht am Augenschein hängt. Exit 1 heißt Funde:
+  jeder davon wird eine Anpassung. Bricht das Skript mit Exit 2 ab (Pfad falsch,
+  Datei nicht UTF-8), erst den Pfad aus dem Abschnitt Eingabe prüfen und erneut
+  ausführen — ohne Scan keinen Befund schreiben, sonst fehlt genau die Klasse
+  Funde, die man mit den Augen übersieht. Was das Skript nicht abdeckt, sagt es
+  selbst: Personen- und Ortsnamen einer fremdsprachigen Quelle prüft die
+  Prüf-Dimension Figuren-Namen.
+  **Gegenprobe vor dem Abliefern:** Trägt eine Entscheidung im Befund einen
+  Laden-, Orts- oder Herkunfts-Anker mit Option „Original lassen", ist sie
+  falsch eingeordnet — sie gehört nach oben zu den Anpassungen. Ausreden, die
+  hier auftauchen und alle nicht zählen: „die Kulisse IST ein US-Markt" (ein
+  Grund, die Kulisse zu tauschen, nicht das Wort zu behalten) · „im Log stand
+  mehrfach ‚passt'" (frühere Fälle waren Atmosphäre, kein genannter fremder
+  Laden) · „der Satzkontext erklärt die Funktion selbst" (er erklärt sie, aber
+  sie gehört ihr nicht).
   Bei einer Community-Avatarin (Community-Transfer, s. o.) erfüllen Ersatz-Anker
   die Funktion in IHRER Community im DACH-Markt: Ein Schwarzer US-Promi-Anker
   wird zum Schwarzen Promi-Anker, den die Community in DACH kennt (Research-first
@@ -182,6 +282,32 @@ mit den zwei Ausnahmen aus „Eingabe"):
   Zuschauer-Anrede selbst vom Du abweichen soll, entscheidet das die KI und
   weist es im Abschluss-Bericht in einer Zeile aus. Im Befund taucht die
   Anrede nicht auf.
+- **Kundensprache (nur wenn die Brand-Datenbank eine `kundensprache-de.md` hat):**
+  Drei Funde. Beleg für (a) und (b) ist ein wörtliches Kundenzitat mit R-Nummer —
+  aus den Zitat-Abschnitten der Datei oder über die Beleg-Spalte ihrer Tabelle,
+  nie aus den Ableitungs-Absätzen („Konsequenz", „Deutung"). Ohne solches Zitat
+  gibt es keinen Fund (a) und keinen Fund (b).
+  (a) *Wort fehlt:* Die Copy nennt einen Zustand, für den die Datei ein belegtes
+  Kundenwort führt, in einer Übersetzer-Formulierung, die dort nicht vorkommt →
+  **Anpassung** nach (c) der Einordnung oben, neue Fassung = das Kundenwort.
+  Zeilen, die die Datei als „kein Tausch-Kandidat" oder „kein Wortebenen-Tausch"
+  ausweist, liefern keinen Fund (a) — ihr Inhalt kann aber (b) tragen. Ebenso
+  liefert eine Stelle keinen Fund (a), wenn die Übersetzung dort eine
+  `Kundensprache-verworfen:`-Anmerkung trägt: Dort wurde das Wort bewusst abgelehnt,
+  weil es den Sprachfluss oder das Zeitfenster gesprengt hätte. Es wieder einzusetzen
+  hieße, diese Entscheidung ungefragt zu kippen.
+  (b) *Belegter Skepsis-Widerspruch:* Die Copy behauptet etwas, das ein
+  wörtliches Kundenzitat der Datei direkt bestreitet (etwa ein Wirkungs-Versprechen
+  ohne Grenze gegen Zitate, die an der Dauer messen) → **Entscheidung** für
+  Viktor, weil eine Grenze die Aussage ändert. Das R-Zitat IST der Research-Beleg
+  der B-Empfehlung; zusätzlicher Research ist dafür nicht nötig.
+  (c) *Lücke:* Eine `Kundensprache-Lücke:`-Anmerkung der Übersetzung oder eine
+  Tabellenzeile, die die Datei ausdrücklich als Lücke führt → **Entscheidung ohne
+  Empfehlung**, Vermerk „Kundensprache-Lücke": Für diesen Zustand hat die
+  Zielgruppe kein belegtes Wort, die Copy steht wörtlich übersetzt da. Hier fehlt
+  der Beleg per Definition — das ist der Punkt, nicht ein Mangel des Fundes.
+  Findet sich zu einem Punkt weder ein Zitat noch eine ausgewiesene Lücke, bleibt
+  er ein Wirkungs-Bedenken und entfällt nach der Dimension unten.
 - **Rechtliches und Wirkungs-Bedenken sind kein Befund-Inhalt.** Abmahnbarkeit,
   Wettbewerbs- und Werberecht, Health-Claims: Das prüft Viktors Anwalt am
   fertigen Text. Und ob ein Claim übertrieben wirkt, zu viel Kauf-Druck macht
@@ -195,7 +321,10 @@ mit den zwei Ausnahmen aus „Eingabe"):
   Marketing-Kern und gehen in dessen Rubrik, nur das Rechts-Vokabular fällt weg.
   Rote Flaggen: Du tippst „abmahnbar", „UWG", „rechtlich riskant" — oder „wirkt
   übertrieben", „könnte unangenehm wirken", „die Kundin ist … müde" → Zeile
-  streichen.
+  streichen. Ausgenommen sind allein die Funde (b) und (c) der Prüf-Dimension
+  „Kundensprache": (b) hängt an einem wörtlichen Kundenzitat mit R-Nummer, nicht am
+  Urteil der KI; (c) meldet eine Lücke, die die Datenbank selbst ausweist. Alles
+  andere aus dieser Richtung fällt unter diese Regel.
 
 Maßstab bei jedem Fund: Stolpert die Avatarin über einen Fakten- oder
 Logik-Bruch (unmöglicher Anlass, kaputter Bezug, Anker ohne Funktion in ihrem
@@ -217,7 +346,7 @@ die Funktion, Research-Belege in Klammern dahinter (Quelle/Kernaussage):
 **Avatarin (aus der Copy belegt):** <1–2 Sätze: wer sie ist — mit Textstellen>
 
 **Anpassungen (wende ich an — kippe einzelne per Nummer):**
-1. (M:SS) „<Zitat>" → <neue Fassung> — <Grund: Store-/Fakten-Bruch ODER „Log: so entschieden in <Projekt>">
+1. (M:SS) „<Zitat>" → <neue Fassung> — <Grund: Store-/Fakten-Bruch ODER „Log: so entschieden in <Projekt>" ODER „Kundensprache: <R-Nummer>">
 2. …
 
 **Entscheidungen (deine Wahl per Nummer + Buchstabe):**
@@ -225,9 +354,13 @@ die Funktion, Research-Belege in Klammern dahinter (Quelle/Kernaussage):
    - A: Original lassen
    - B: <Vorschlag> — Empfehlung, weil <Research-Ergebnis in einem Halbsatz (Quelle)>
    - C: <Alternative> — <was dafür spricht>
-2. …
+2. (M:SS) „<Zitat>" — Kundensprache-Lücke: kein belegtes Kundenwort, steht wörtlich übersetzt da
+   - A: so lassen
+   - B: <eigener Wortlaut von dir>
+3. …
 
-**Geprüft, passt (Beleg des Store-/Anker-Abgleichs, keine Aktion nötig):**
+**Geprüft, passt (Beleg des Store-, Anker- und Kundensprache-Abgleichs, keine Aktion nötig):**
+- Kundensprache: <Anzahl> Wörter getauscht — <R-Nummer (Wort, M:SS); …>
 - <Anker/Element> — <Funktion + warum sie trägt, ein Halbsatz>
 ```
 
@@ -253,8 +386,16 @@ Viktors Antwort fällt selten als reines „passt" — die Formen und ihre Wege:
 - **Entscheidungen:** je Nummer die gewählte Option (A/B/C oder eigener
   Wortlaut) einarbeiten. **Unbeantwortete Entscheidungen = Option A (Original
   lassen)** — im Abschluss-Bericht je Nummer als „unbeantwortet → Original"
-  nennen, nicht stillschweigend anders entscheiden.
+  nennen, nicht stillschweigend anders entscheiden. Diese Voreinstellung darf
+  nie einen Alltags-Anker erreichen: Laden-, Orts- und Herkunfts-Anker stehen
+  als Anpassung im Befund (siehe Prüf-Dimension Kulturelle Anker) und haben
+  damit kein „Original", das ein Schweigen behalten könnte.
 - **Eigene Änderungswünsche** → übernehmen; sie schlagen jede Option.
+- **Gekippte Kundensprache-Tausche:** Die Sammelzeile unter „Geprüft, passt"
+  nennt die R-Nummern; kippt Viktor eine davon, wird dieses Wort beim final-Bau
+  auf die wörtliche Fassung aus der Übersetzungs-Datei zurückgesetzt (dort steht
+  sie in der `Kundensprache:`-Anmerkung im Feld `wörtlich`) und im
+  Abschluss-Bericht als zurückgesetzt ausgewiesen.
 
 **Log-Pflege (direkt nach dem Entscheid, vor dem final-Bau):** Jede Frage-Art,
 die Viktor an diesem Gate entschieden hat (auch „bleibt Original"-Entscheide),

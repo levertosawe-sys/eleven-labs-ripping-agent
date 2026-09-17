@@ -5,13 +5,10 @@ fremden (englischen) Video-Sales-Letter-Ad wird eine eigene, deutsch GESPROCHENE
 gleiche Bilder-Dramaturgie, neue Stimme, neue Copy, eigenes Produkt-Branding, fertig
 geschnitten bis CapCut und Meta-Upload.
 
-**Ehrlicher Stand: Das ist ein RAHMEN-Export, kein fertig gelaufener Workflow.**
-15 von 26 Bausteinen existieren und liegen als Skills bei (die komplette Vorstufe, der
-Faktencheck, die Produkttausch-Strecke, der Upload). 11 Bausteine sind **Geister** — sie
-sind in der Workflow-Datei präzise beschrieben (Soll-Verhalten, Gesetze, Messaufträge),
-aber noch nicht gebaut. Sie entstehen nach der Use-and-Break-Methode: benutzen, am
-echten Projekt brechen, das Gelernte in den Workflow zurückschreiben. Wer dieses Paket
-bekommt, bekommt also den Bauplan PLUS die halbe Fabrik — nicht die ganze.
+**Ehrlicher Stand:** 24 von 27 Bausteinen existieren und liegen bei — die Kette ist in
+echten Läufen bis zum CapCut-Projekt durchgelaufen, inklusive Lip-Sync für sichtbar
+sprechende Menschen. Drei Bausteine sind **Geister** (Ripping-Sheet, Upload-Werkzeug,
+Meta-Werbekonto-Datenbank): in der Workflow-Datei beschrieben, aber nicht im Paket.
 
 Die große Schwester dieses Workflows (Singing-VSL: gleiche Kette, aber mit Suno-GESANG
 statt Sprechstimme) ist seit Wochen im Serienbetrieb — ihre Workflow-Datei liegt als
@@ -39,7 +36,8 @@ VSL rein
  └─► Transkript (Scribe) ─► Augen-Check ─► Captions tilgen (Vmake) ─► Clip-Karte
        └─► Übersetzung in Sprech-Budgets ─► Markt-Befund ─► MENSCH entscheidet
              └─► Stimme casten (einmal je Brand, MENSCH wählt) ─► Sprechspur bauen
-                   └─► sprech-watch (jede Zeile geprüft) ─► Schnitt auf die Stimme
+                   └─► sprech-watch (jede Zeile geprüft) ─► Audio-Prüfung
+                         └─► Lip-Sync (nur Menschen, die sichtbar sprechen) ─► Schnitt
                          └─► Abnahme + Faktencheck ─► Captions ─► CapCut (MENSCH sichtet)
                                └─► Meta-Upload (immer pausiert)
    (parallel: Produkt-Clips → eigene Custom Clips · Quell-Audio → Musikbett)
@@ -62,37 +60,35 @@ VSL rein
 ## Was in diesem Ordner liegt
 
 ```
-longform-speaking-vsl-quasi/
-├── LIESMICH.md                        ← diese Datei
-├── 00-START-FUER-KI.md                ← Startbefehl + Geister-Regel für KI-Agenten
+eleven-labs-ripping-agent/
+├── README.md · LIESMICH.md            ← Überblick für Menschen
+├── 00-START-FUER-KI.md                ← Einstieg für KI-Agenten
 ├── 01-VORAUSSETZUNGEN.md              ← Umgebung, Konten, Schlüssel (KEINE Schlüssel enthalten)
-├── 02-ANLEITUNG-KNOTEN-FUER-KNOTEN.md ← die Kette, Knoten für Knoten, Geister markiert
-├── 03-FALLEN-UND-TRICKS.md            ← gemessene Fallen aus dem Serienbetrieb der Schwester
+├── 02-ANLEITUNG-KNOTEN-FUER-KNOTEN.md ← die Kette, Knoten für Knoten
+├── 03-FALLEN-UND-TRICKS.md            ← gemessene Fallen aus echten Läufen
 ├── 04-EINBAU.md                       ← in ein eigenes Projekt übernehmen
+├── feedback_log.md                    ← Herleitung der Regeln
 │
-├── workflow/
-│   └── Longform-Speaking-VSL-Quasi.json   ← die Kette als Datei (die Arbeitsanweisung)
+├── workflows/eleven-labs-ripping-agent.json   ← die Kette als Datei (die Arbeitsanweisung)
 │
-├── skills/                            ← die 8 EXISTIERENDEN Fach-Skills + der Ausführer
-│   ├── execute/                         ← der AUSFÜHRER (wie eine Kette abläuft) — nie weglassen
-│   ├── singing-vsl-transkription/       ← Transkript mit Zeitstempeln (samt Scripts)
-│   ├── singing-vsl-augen-check/         ← Verdachtsstellen per Frame-Beweis klären
-│   ├── vmake-caption-entfernen/         ← eingebrannte Captions tilgen
-│   ├── singing-vsl-clip-karte/          ← Quelle in beschriebene Clips zerlegen
-│   ├── singing-vsl-dach-lokalisierung/  ← Markt-Befund für den Mensch-Entscheid
-│   ├── watch-factcheck/                 ← Faktencheck mit echtem Auge
-│   ├── custom-clip-production/          ← Produkt-Clips rebranden + prüfen
-│   └── ad-upload/                       ← Meta-Upload, immer pausiert
+├── .claude/skills/                    ← die Fach-Skills + der Ausführer (execute)
+│   ├── singing-vsl-transkription · singing-vsl-augen-check · vmake-caption-entfernen
+│   ├── singing-vsl-clip-karte · speaking-vsl-emotionskarte · speaking-vsl-uebersetzung
+│   ├── singing-vsl-dach-lokalisierung · speaking-vsl-stimm-casting · sprech-watch
+│   ├── speaking-vsl-musikbett · speaking-vsl-lipsync (nur Menschen) · speaking-vsl-captions
+│   └── watch-factcheck · custom-clip-production · ad-upload · execute
 │
-└── referenz/                          ← Erbgut für die 11 Geister
-    ├── Longform-Singing-VSL-Quasi.json  ← die große Schwester (erprobtes Vorbild)
-    ├── sa-captions-capcut.SKILL.md      ← CapCut-Übergabe der Schwester (Schritte 6–8 erben)
-    ├── voiceover-narrator-voice-design-prompt/ ← Ausgangs-Baustein fürs Stimm-Casting
-    ├── background-music-suno/           ← Musikbett-Weg B (eigenes Instrumental)
-    └── projekte-datenbank.DATENBANK.md  ← Vertragskarte der Projekt-Ablage (Naming-Vorlage)
+├── tools/sp/                          ← Sprech-Kette: Bootstrap, Sprechspur, Prüfer, Render, Abnahme, CapCut-Paket
+├── tools/vmake/                       ← Vmake-Client + Schlieren-Scan
+│
+├── datenbanken/                       ← Verträge (DATENBANK.md), keine Kundendaten
+│   ├── sp-projekte · sp-brands · sp-learnings (mit learnings.md) · stimmen (mit Steckbrief)
+│   └── brand-vorlage · projekte-quasi (Vorlagen des ersten Pakets)
+│
+└── referenz/                          ← Erbgut der Singing-Schwester
 ```
 
-Ein Export ist eine **Kopie zu einem Zeitpunkt**, kein Live-Spiegel (Stand: 20.08.2026).
+Ein Export ist eine **Kopie zu einem Zeitpunkt**, kein Live-Spiegel (Stand: 17.09.2026).
 Ein echtes Beispiel aus einem gelaufenen Fall fehlt noch — diese Linie ist jung; das
 Beispiel entsteht mit dem ersten Lauf und wird dann nachexportiert.
 
@@ -118,10 +114,11 @@ Beispiel entsteht mit dem ersten Lauf und wird dann nachexportiert.
 Dieser Workflow arbeitet mit **fremden VSLs als Quelle** und macht daraus eine eigene
 Ad in anderer Sprache. Drei Dinge sind nicht verhandelbar:
 
-- **Stimmen werden NIE geklont.** Die Original-Sprecherstimme der Quelle wird nicht
-  nachgebaut — weder per ElevenLabs-Klon noch anders. Die Brand-Stimme wird neu
-  designt (Voice Design) oder aus der Library gewählt. Das schützt rechtlich UND das
-  ElevenLabs-Konto, an dem die halbe Kette hängt.
+- **Die Stimme der Quell-Ad wird NIE geklont.** Die Original-Sprecherstimme der Quelle
+  wird nicht nachgebaut — weder per ElevenLabs-Klon noch anders. Die Brand-Stimme kommt
+  aus der Bibliothek, aus Voice Design oder als Klon einer Aufnahme, an der der Betreiber
+  die Rechte hat (z. B. eine eigene Ad). Das schützt rechtlich UND das ElevenLabs-Konto,
+  an dem die halbe Kette hängt.
 - **Produkt-Branding der Quelle fliegt raus.** Die Custom-Clip-Strecke ersetzt jede
   Einstellung, die das fremde Produkt zeigt, durch eigene rebrandete Clips.
 - **Verantwortung liegt beim Betreiber.** Bild-Dramaturgie und Testimonial-Material der

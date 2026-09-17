@@ -43,6 +43,7 @@ Frag diese Dinge in **einer** Nachricht ab, nicht einzeln:
 | **Quell-VSL** | die MP4 (Pfad oder Upload) | `inbox/quelle.mp4` |
 | **Ziel-Brand + Kürzel** | Naming, Brand-Wissen, Produkt-Referenzen | `QUA` — eigenes Produkt „…“ |
 | **Zielsprache/Markt** | Übersetzung + Markt-Prüfung | Deutsch / DACH |
+| **Lip-Sync?** | nur fragen, wenn ein Mensch sichtbar spricht (`speaking-vsl-lipsync`, Vorbefund messen) | „ja, nur die Ärztin“ |
 | **Brand-Stimme schon gewählt?** | sonst läuft zuerst das Stimm-Casting mit Gate | „nein — caste 3–5“ |
 | **Schlüssel vorhanden?** | ElevenLabs, kie.ai, ggf. Vmake, ggf. Meta | liegen in `~/.config/<projekt>/.env` |
 

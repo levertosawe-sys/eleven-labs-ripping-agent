@@ -1,6 +1,6 @@
 ---
 name: "custom-clip-production"
-description: "Ersetzt Produkt-Clips einer Resync-Ad (Competitor-Branding, z. B. Quasi) durch neu animierte Custom Clips mit dem eigenen rebrandeten Produkt (Areum) — Frame-Edit + Kling-Kette + Tempo-Anpassung + Handlungs-Prüfer. Nutzen, wenn Viktor sagt „Custom Clips", „Produkttausch", „ersetz das Produkt in den Clips", „rebrand die Clips", „Quasi raus, Areum rein" — oder wenn im Produkttausch-Workflow (Longform-Singing-VSL-Quasi-Produkttausch) die Clip-Karte Clips mit sichtbarem Produkt markiert hat. Auch ohne diese Wörter nutzen, sobald eine fertige oder laufende Rip-Ad Competitor-Packaging zeigt, das nicht mehr ausgespielt werden darf (Rebranding, DMCA)."
+description: "Ersetzt die Produkt-Clips einer Resync-Ad (Competitor-Branding) durch neu animierte Custom Clips mit dem eigenen Produkt der laufenden Brand-Linie — Frame-Edit + Kling-Kette + Schnitt auf Originallänge + Handlungs-Prüfer. Nutzen, wenn Viktor sagt „Custom Clips", „Produkttausch", „ersetz das Produkt in den Clips", „rebrand die Clips" — oder wenn die Clip-Karte eines Laufs Clips mit sichtbarem Produkt markiert hat. Auch ohne diese Wörter nutzen, sobald eine fertige oder laufende Rip-Ad Competitor-Packaging zeigt, das nicht mehr ausgespielt werden darf (Rebranding, DMCA)."
 ---
 
 # Skill — Custom-Clip-Production (Produkt-Clips rebranden)
@@ -20,40 +20,67 @@ Ablage der Markierung: `[projekt]/_work/clips/custom_clips.json` — eine Zeile 
 markiertem Clip:
 
 ```json
-{"clip": 285, "t0": 570.08, "t1": 572.17, "dauer": 2.08, "form": "sachet", "grund": "Sachet frontal in die Kamera, Logo gross lesbar"}
+{"clip": 285, "t0": 570.08, "t1": 572.17, "dauer": 2.08, "form": "sachet", "grund": "Sachet frontal in die Kamera, Logo gross lesbar", "referenzbild": "<brandDb>/Product Reference/<referenz-datei>"}
 ```
 
-`form` ∈ `sachet` | `dose` | `screen` | `sonstiges` — was für eine Produktform
-im Original zu sehen ist. `sachet` = das flache Masken-Päckchen, `dose` = die
-Faltschachtel/Box, `screen` = das Produkt erscheint auf einem Bildschirm im Bild
-(Shop-Seite, Handy), `sonstiges` = alles andere (z. B. Produkt-Berg im
-Hintergrund). Fehlt die Datei, die Clip-Karte des Projekts einmal durchgehen
+`referenzbild` ist Pflicht in JEDER Zeile: der volle Pfad der Referenz-Datei, die
+laut Steckbrief zur `form` gehört. Jeder Edit läuft gegen genau dieses Bild, und
+sein Label wird wortwörtlich kopiert — ohne das Feld in der Zeile greift beim
+Produzieren irgendwann ein Edit auf ein beschriebenes statt gezeigtes Design
+zurück, und die Labels driften (erfundene Zweitzeilen, Schreibvarianten).
+
+`form` sagt, welche Gestalt das Produkt in diesem Clip hat — sie entscheidet,
+welche Referenz-Datei in den Edit geht. Zwei Werte gelten für jede Brand:
+`screen` = das Produkt erscheint auf einem Bildschirm im Bild (Shop-Seite, Handy),
+`sonstiges` = alles, wofür der Steckbrief keine Referenz hat (z. B. Produkt-Berg
+im Hintergrund).
+
+Alle übrigen Werte sind **produktform-Namen der jeweiligen Brand** und stehen in
+ihrem `produkt-steckbrief.md` (Abschnitt 2) — z. B. `sachet` und `dose` bei einer
+Masken-Brand, `flasche` bei einer Kapsel-Brand. Beim Kartieren nur Werte
+verwenden, die der Steckbrief kennt; passt nichts, ist es `sonstiges`.
+
+Fehlt `custom_clips.json`, die Clip-Karte des Projekts einmal durchgehen
 (Beschreibungs-Feld `bild` nach Verpackungs-Wörtern rastern, Treffer mit eigenen
 Augen am Frame verifizieren) und die Datei schreiben — erst dann produzieren.
 
-`screen`-Clips (Shop auf einem Bildschirm): Sobald in `brands/QUA - Quasi/
-QUA - Reference IMGs/` Shop-Referenz-Screenshots liegen (Dateiname beginnt mit
-`QUA - Areum Shop`), wird der Screen-Inhalt mit diesen Referenzen auf den
-eigenen Shop umgebaut — gleiche Edit-Kette wie beim Produkt. Fehlen die
-Shop-Referenzen, den Clip NICHT produzieren, sondern als offenen Punkt in den
+`screen`-Clips (Shop auf einem Bildschirm): Nennt der Produkt-Steckbrief der
+Linie (Abschnitt Referenzen) eine Shop-Referenz, wird der Screen-Inhalt damit auf
+den eigenen Shop umgebaut — gleiche Edit-Kette wie beim Produkt. Fehlt die
+Shop-Referenz, den Clip NICHT produzieren, sondern als offenen Punkt in den
 Lauf-Bericht an Viktor. `sonstiges`-Clips immer als offener Punkt an Viktor.
 
 ## 2. Referenzen: welches Produktbild in den Edit geht
 
-Alle Produkt-Referenzen liegen im Unterordner `Product Reference/` der
-Brand-Datenbank: `/root/AWMS/datenbanken/brand-quasi/Product Reference/`.
-Es wird IMMER von dort gearbeitet — kein anderer Ablageort.
+Dieser Skill gilt für jede Markt-Brand-Linie. Welches Produkt hineingehört, sagt
+**die Linie des Laufs**, nie dieser Skill — sonst trägt eine Ad die Marke einer
+fremden Brand.
 
-- `Areum Sachet Reference.png` — für `form: sachet`
-- `Areum Box Reference.png` — für `form: dose`
-- `Areum Shop *.png` — Shop-Screenshots für `form: screen` (sobald vorhanden)
+**Die Brand ermitteln (drei Schritte, in dieser Reihenfolge):**
 
-Die Referenz-Datei ist die Wahrheit für Farben, Layout und Maskensymbol. Details,
-die die aktuelle Verpackung trägt, die Referenz-Datei aber (noch) nicht zeigt,
-werden zusätzlich als Text in den Edit-Prompt geschrieben (siehe Prompt-Vorlage);
-bei Widerspruch zwischen Datei und Prompt-Text gewinnt die Datei. Liegt im
-Ordner eine neuere Referenz-Fassung, die alte ersetzen — nie zwei Fassungen
-derselben Form nebeneinander liegen lassen.
+1. Kürzel der Linie aus dem Auftrag nehmen (z. B. `QUA`, `RES`, `ROV`) — es steht
+   im Projektnamen `KÜRZEL NNN | DATUM`.
+2. In `Longform-Singing-VSL-Agent/datenbanken/linien/linien.json` den Eintrag
+   dieses Kürzels lesen. Das Feld `brandDb` nennt die Brand-Datenbank, z. B.
+   `datenbanken/brand-resilia`. Diese Datenbanken wohnen im Stamm-Projekt, also
+   unter `/root/AWMS/`.
+3. Referenz-Ordner ist damit `/root/AWMS/<brandDb>/Product Reference/`.
+
+**Der Steckbrief ist die Marken-Wahrheit.** In diesem Ordner liegt
+`produkt-steckbrief.md`: Wortmarke, Referenz-Datei je `form`, die
+Verpackungs-Beschreibung für den Edit-Prompt und der Render-Stil. Er wird VOR dem
+ersten Edit gelesen — die Prompt-Vorlage in Abschnitt 4 füllt sich aus ihm.
+
+**Fehlt der Steckbrief oder ist der Ordner leer:** STOPP, nichts improvisieren,
+keine Referenz einer anderen Brand ausleihen. Viktor melden, dass die Linie noch
+kein Custom-Clip-Onboarding hatte (`.claude/skills/custom-clip-onboarding`).
+
+Die Referenz-Datei ist die Wahrheit für Farben, Layout und Produktsymbol. Details,
+die die aktuelle Verpackung trägt, die Referenz-Datei aber nicht zeigt, stehen als
+Text im Steckbrief und wandern zusätzlich in den Edit-Prompt; bei Widerspruch
+zwischen Datei und Text gewinnt die Datei. Liegt im Ordner eine neuere
+Referenz-Fassung, die alte ersetzen — nie zwei Fassungen derselben Form
+nebeneinander liegen lassen.
 
 ## 3. Handlungs-Inventar des Originals (Pflicht vor jeder Produktion)
 
@@ -79,10 +106,10 @@ Ein einziger Quell-Frame macht das Label über den ganzen Clip stabil.
 
 Gesetze für den Edit:
 
-- **NUR das eigene Produkt.** Rebrandet wird ausschließlich das Masken-Produkt
-  (Sachet/Dose). ALLE anderen Objekte bleiben unangetastet — auch andere
-  Produkte, die die Competitor-Marke tragen. Solche Stellen nicht eigenmächtig
-  umlabeln, sondern als Befund in den Lauf-Bericht an Viktor.
+- **NUR das eigene Produkt.** Rebrandet wird ausschließlich das Produkt, das der
+  Steckbrief der Linie beschreibt. ALLE anderen Objekte bleiben unangetastet —
+  auch andere Produkte, die die Competitor-Marke tragen. Solche Stellen nicht
+  eigenmächtig umlabeln, sondern als Befund in den Lauf-Bericht an Viktor.
 - **Position exakt.** Das Produkt bleibt an Position, Größe und Winkel des
   Original-Frames — ein am Bildrand angeschnittenes Produkt bleibt
   angeschnitten.
@@ -95,11 +122,60 @@ Gesetze für den Edit:
    des Folge-Clips. Beide Frames ansehen und bestätigen, dass sie dieselbe Szene
    zeigen; zeigt einer eine fremde Szene, liegt der Griff an/hinter der Kante —
    weiter von der Kante weg neu greifen.
-2. **Beide Frames editieren** — Modell `nano_banana_flash` (Nano Banana 2) über
-   die Higgsfield CLI (`/usr/bin/higgsfield`), Referenz (1) = der Original-Frame,
-   Referenz (2) = die Tier-1-Produktreferenz, `--aspect_ratio 9:16
-   --resolution 2k`. Prompt-Vorlage (bewährt, nur die Produktform-Details
-   austauschen):
+2. **Den Start-Frame editieren** — nur ihn; der End-Frame diente in Schritt 1
+   allein der Szenen-Kontrolle und wird nie editiert (siehe Absatz oben: es gibt
+   keinen End-Frame-Edit). Modell **Nano Banana 2** über kie.ai:
+
+   ```
+   python3 tools/sa/kie_bild.py edit \
+     --frame    <projekt>/_work/clips/c<NNN>_start.png \
+     --referenz <brandDb>/Product\ Reference/<referenz-datei aus dem Steckbrief> \
+     --prompt-datei <projekt>/_work/clips/c<NNN>_edit.txt \
+     --resolution 1K \
+     --out      <projekt>/_work/clips/c<NNN>_start_rebrand.png
+   ```
+
+   Referenz (1) = der Original-Frame, Referenz (2) = die Tier-1-Produktreferenz —
+   **Teil-Ersatz:** Zeigt ein Clip das Produkt erst ab der Mitte (Hand greift in die
+   Tasche, Beutel taucht auf), wird nur der Teil ab dem ersten Produkt-Frame ersetzt —
+   davor ist kein Fremd-Branding im Bild, das Original bleibt. `custom_clips.json`
+   bekommt dann zusätzlich `t_ersatz` (Sekunde des ersten Produkt-Frames).
+
+   **Teilweise sichtbares Produkt (lugt aus einer Tasche, von Fingern verdeckt):** die
+   Vollbeschreibungs-Vorlage unten NICHT benutzen — das Modell „vervollständigt" das
+   Produkt, zieht es heraus, vergrößert es (gemessen: zwei Fehlversuche, erst die
+   Minimal-Fassung saß pixelgenau). Stattdessen den Edit als kleinste Änderung
+   formulieren: den sichtbaren Bereich beschreiben, Form/Größe/Neigung/Griff als
+   unveränderlich benennen, und NUR die Buchstaben der Wortmarke tauschen.
+   in genau dieser Reihenfolge, denn die Prompt-Vorlage sagt „the first image"
+   und „the second image". Das Werkzeug lädt beide hoch, ruft `nano-banana-2`
+   mit `9:16` auf und legt das Ergebnis unter `--out` ab. **Auflösung immer die
+   niedrigste Stufe: `--resolution 1K`** — Ziel ist ein 716×1284-Frame, 2K und 4K
+   kosten mehr und werden ohnehin heruntergerechnet. Der Standardwert des Werkzeugs
+   ist 2K, die Stufe gehört also in jeden Aufruf. Prompt-Vorlage
+   (bewährt, nur die Produktform-Details austauschen):
+
+   > Edit the first image. Keep EVERYTHING pixel-identical - the person, their pose,
+   > hands, face, hair color, clothing, the background room, lighting, camera
+   > angle and crop stay exactly as in the first image. ONLY change the
+   > <PRODUKTFORM>: it currently reads '<COMPETITOR-BESCHRIFTUNG>' - remove that
+   > branding completely and rebrand it to match the product in the
+   > second image: <VERPACKUNGS-BESCHREIBUNG>. Render the rebranded
+   > <PRODUKTFORM> in the same <RENDER-STIL> as the rest of the image. Keep its
+   > exact position, size, tilt and the fingers gripping it. The word
+   > '<WORTMARKE>' must be clearly legible. Do not invent a new room or new pose -
+   > the scene stays exactly as in the first image. Do not add captions or any
+   > other text.
+
+   Die Platzhalter kommen aus zwei Quellen — nie aus dem Gedächtnis:
+
+   | Platzhalter | Quelle |
+   |---|---|
+   | `<WORTMARKE>`, `<VERPACKUNGS-BESCHREIBUNG>`, `<RENDER-STIL>` | `produkt-steckbrief.md` der Linie (Abschnitt 2) |
+   | `<PRODUKTFORM>` | Feld `form` des Clips aus `custom_clips.json` |
+   | `<COMPETITOR-BESCHRIFTUNG>` | was im Original-Frame wirklich auf dem Produkt steht — am Frame ablesen |
+
+   So sieht die ausgefüllte Vorlage für ein Sachet aus (Linie QUA):
 
    > Edit the first image. Keep EVERYTHING pixel-identical - the woman, her pose,
    > hands, face, hair color, clothing, the background room, lighting, camera
@@ -118,9 +194,13 @@ Gesetze für den Edit:
 
    Andere Edit-Modelle nicht verwenden: `nano_banana_pro` driftet bei Identität
    (Haarfarbe) und Komposition, `flux_kontext` verhunzt die Wortmarke.
-3. **Ergebnis-Download:** im Job-JSON zählt NUR das Top-Level-Feld `result_url`
-   — die URLs unter `params.medias[]` sind das Echo der EIGENEN Uploads (wer die
-   nimmt, lädt sein Eingabebild herunter und hält es für das Ergebnis).
+3. **Ergebnis-Beleg:** Das Werkzeug legt neben jeder Ausgabe ein
+   `<out>.job.json` ab — das ist der Beleg, den der Lauf-Bericht zitiert. Darin
+   zählt NUR `resultJson.resultUrls[]`; die URLs, die du in `image_input` bzw.
+   `image_urls` geschickt hast, sind das Echo der EIGENEN Uploads (wer die nimmt,
+   lädt sein Eingabebild herunter und hält es für das Ergebnis). Die Upload-Links
+   sterben nach 24 Stunden — die Wahrheit ist immer die lokale Datei unter
+   `--out`, nie ein kie.ai-Link.
 4. **Frame-QA in voller Auflösung:** Markenname lesbar? Genau EIN Produkt?
    Pose/Raum/Person unverändert? Wirkt etwas halluziniert, ZUERST den
    Original-Frame ansehen — was dort schon steht, ist kein Modell-Fehler.
@@ -129,10 +209,33 @@ Gesetze für den Edit:
 
 ## 5. Animation (Kling, nur Start-Frame)
 
-Modell `kling3_0` (Higgsfield CLI), NUR `--start-image` = der bearbeitete
-Start-Frame (kein `--end-image`), `--mode std --aspect_ratio 9:16 --sound off`
-(das Echo der Job-Antwort MUSS `sound: off` zeigen, sonst wurde Audio
-mitbezahlt).
+Modell **Kling 3.0** über kie.ai, NUR das Startbild = der bearbeitete
+Start-Frame (es gibt bewusst kein Endbild):
+
+```
+python3 tools/sa/kie_bild.py animate \
+  --startbild <projekt>/_work/clips/c<NNN>_start_rebrand.png \
+  --prompt-datei <projekt>/_work/clips/c<NNN>_kling.txt \
+  --sekunden <ziel aufgerundet, min. 3> \
+  --out <projekt>/_work/clips/c<NNN>_roh.mp4
+```
+
+**Ausnahme — zweites Bild als Ziel-Frame (`--endbild`):** Zeigt der Start-Frame das
+Produkt nicht vollständig (Teil-Ersatz) oder soll das Produkt nachweislich an seinem
+Platz bleiben, wird der END-Frame des Original-Clips ebenfalls umgebrandet und als
+zweites Bild mitgegeben. Das widerspricht der Nur-Start-Frame-Regel nicht: Dort ging es
+um zwei getrennte Edits DESSELBEN vollen Labels, die gegeneinander morphen — hier
+zeigen beide Frames dieselbe Gestaltung (Teil und Ganzes). Gemessen: ohne Endbild
+animierte Kling den verdeckten Label-Rest als leere Fläche; mit Endbild kam das Produkt
+mit vollem Label heraus, und ein Beutel, der sonst hochgehoben wurde, blieb unten.
+
+Das Werkzeug setzt `mode: std`, `aspect_ratio` aus dem Startbild und `sound: false`. Im
+`<out>.job.json` nachsehen, dass `sound` wirklich `false` ist — sonst wurde Audio
+mitbezahlt, das diese Kette nie braucht (der Ton kommt aus dem Song). Auch hier gilt die
+niedrigste Stufe: `mode: std`, nie `pro` oder `4K` — das Ziel ist 720×1280, höhere Stufen
+zahlen für Pixel, die der Schnitt wegwirft. Gegenprobe am FERTIGEN Clip statt nur im
+Job-JSON: `ffprobe` muss null Audiostreams zeigen; liegt eine Tonspur drin, wurde Audio
+mitbezahlt.
 
 - **Dauer:** ganze Sekunden, Minimum der API ist 3. Generiert wird die
   Ziel-Länge AUFGERUNDET auf die nächste ganze Sekunde, mindestens 3
@@ -187,12 +290,47 @@ entscheiden lassen — nie einen durchgefallenen Clip stillschweigend einbauen.
   `02-roh/` (Kling-Rohclips), `03-final/` (getempte Clips, benannt
   `c<NNN>-custom.mp4`), `pruefer.md` (Checklisten-Ergebnis je Clip).
 - Sichtung: je Clip ein Vergleichsvideo Original|Custom (hstack, EIN Durchlauf,
-  kein Loop) über das Bildboard (`bild <datei>`) an Viktor.
-- Die Custom Clips ersetzen ihre Original-Gegenstücke erst NACH Viktors Go im
-  Schnitt/Render des Projekts.
-- Kosten-Rahmen zur Orientierung: ~2 cr je Frame-Edit, ~4,5 cr je 3-s-Kling —
-  vor großen Läufen `higgsfield account status` prüfen und Stand in den
-  Lauf-Bericht schreiben.
+  kein Loop) über das Bildboard (`bild <datei>`) an Viktor — ersatzweise der
+  fertige Clip bzw. Rebrand-Frame als Datei im Chat.
+- **HARTES GATE: Die Custom Clips ersetzen ihre Original-Gegenstücke erst NACH
+  Viktors Go.** Einbauen ohne gezeigten Clip ist ein Regelbruch, keine
+  Abkürzung — auch spät im Lauf, auch wenn der Prüfer grün ist: Der Prüfer
+  misst Handlungen und Lesbarkeit, aber ob das Label wie SEIN Produkt aussieht,
+  beurteilt nur Viktor. Ein übersprungenes Go wurde gemessen erst in der
+  fertigen Ad entdeckt und kostete den Re-Fix eines ganzen Einbau-Laufs.
+- Kosten: beide Etappen laufen über das kie.ai-Guthaben, aus dem auch Suno und
+  das Maschinen-Ohr bezahlt werden — ein Custom-Clip-Lauf über zehn Clips zieht
+  also am selben Konto wie der Song-Bau. Vor großen Läufen den Stand im kie.ai-
+  Konto ansehen und in den Lauf-Bericht schreiben; der Preis je Aufruf steht am
+  Modell im kie.ai-Market und wird nicht hier festgeschrieben, weil er sich ändert.
+
+## 8b. Endcards: Gestaltungs-Karten sind Videos, keine Standbilder
+
+Die Endcard einer Quelle ist fast immer animiert (schwebende Kapseln, Lichtstreifen,
+Glow auf dem Button, zum Schluss fliegt das Produkt auf die Kamera zu). Eine Solena-Karte,
+die als Standbild über das ganze Fenster steht, fällt sofort auf — Viktor hat genau das
+moniert. Darum wird die Endcard in DREI Schritten gebaut, nie nur als Bild:
+
+1. **Karte als Standbild** per Nano-Banana-Edits aus der Original-Endcard (Headline,
+   Badges, Button, Beutel — Angebot laut Brand-DB). Dazu ein **Zoom-Endbild**: gleiche
+   Karte, der Beutel 1,6–1,8× größer, leicht zur Kamera gekippt, alles andere
+   pixelidentisch (Edit-Prompt: „only change the pouch … has floated closer").
+2. **Zwei Kling-Clips, je bis 15 s, Modus `pro`:**
+   - Schweben: **nur Startbild** (Start = Ende = Karte friert Kling ein — gemessen:
+     Bewegungsmaß 0,23, weniger als ein zoompan-Standbild), Prompt mit klarer
+     Bewegungssprache („capsules rain down and float, golden light rays sweep, silk
+     undulates, glow pulses on the button, all printed text stays perfectly still").
+   - Zoom: Startbild = Karte, `--endbild` = Zoom-Endbild, Prompt „pouch slowly floats
+     toward the camera, ending exactly in the final frame".
+3. **Bewegungsmaß messen, nicht schätzen:** mittlere Frame-Differenz (Graustufen,
+   180×320) des Original-Endcard-Fensters gegen den Clip — Ziel dieselbe Größenordnung
+   (gemessen: Original 1,8–3,5; brauchbare Kling-Clips 2,6–3,4; Standbild ≤0,4). Text-
+   Regionen (Headline, Badges, Button) auf den Frames lesen — bleiben sie scharf, ist
+   der Clip gut; warpt der Text, die Regionen aus dem Standbild statisch darüberlegen.
+4. Montage: Schweben → 0,7-s-Crossfade → Zoom, auf 720×1280 skaliert/gecroppt,
+   24 fps; länger als das Endcard-Fenster ist erlaubt (der Einbau tempt aufs Fenster,
+   0,9–1,1× bleibt unsichtbar). Standbild-Fassung nach `02-roh/` (Beleg), nie in
+   `03-final/`.
 
 ## 9. Einbau in die fertige Ad (Custom-Fassung rendern)
 
@@ -210,13 +348,15 @@ Die Custom Clips ersetzen ihre Original-Stellen in der bereits gerenderten Ad
   nicht raten.
 
 **Verfahren (ein ffmpeg-Lauf, ein Encode):**
-1. Grenzen auf das Frame-Raster runden (`f = round(out*24)`), Fenster hinter dem
+1. Grenzen auf das Frame-Raster runden (`f = round(out*fps)`), Fenster hinter dem
    Datei-Ende auf die Videolänge kappen (der letzte Clip ragt oft über das
    Song-Ende hinaus).
 2. Einen Schnittgraphen bauen: Original-Segmente zwischen den Fenstern per
    `trim=start_frame:end_frame`, in jedem Fenster der Custom Clip — getempt mit
    `setpts=PTS*(out-Dauer/Custom-Dauer)` (= dieselbe Rate, die der Render dem
-   Original-Clip gab), `fps=24`, `tpad=stop_mode=clone:stop_duration=1` und
+   Original-Clip gab), `fps=<Render-fps>` (aus `_pipeline/sa_config.json` —
+   SOL-Quellen laufen mit 30 fps, die Custom Clips kommen mit 24 fps von Kling; das
+   Frame-Raster `round(out*fps)` nimmt dieselbe Zahl), `tpad=stop_mode=clone:stop_duration=1` und
    `trim` auf die EXAKTE Fensterframe-Zahl (so bleibt die Gesamtlänge per
    Konstruktion erhalten). Alles in EIN `concat`.
 3. Rendern mit `-map "[out]" -map 0:a -c:a copy` — Audio 1:1 aus der
@@ -225,7 +365,12 @@ Die Custom Clips ersetzen ihre Original-Stellen in der bereits gerenderten Ad
 4. QA: Gesamtdauer = Original ±1 Frame UND Stichproben-Frames an mindestens
    3 ersetzten Positionen zeigen das eigene Produkt.
 
-**CapCut-Übergabe:** das bestehende `_capcut-paket/` des Projekts auf die
+Werkzeug der Referenz-Pipeline: `brands/SOL - Solena/001 SA/_pipeline/custom_einbau001.py`
+(Fenster aus `cutlist_block.json`, Teil-Ersatz ab `t_ersatz`, QA-Frames nach `_custom-clips/04-qa/`).
+Liegt die Custom-Fassung als EINZIGE MP4 in `final/`, baut `tools/sa/capcut_paket.py`
+das Paket direkt auf ihr (die Fassung ohne Custom Clips gehört nach `_work/`).
+
+**CapCut-Übergabe (wenn das Paket schon auf der Original-Fassung gebaut wurde):** das bestehende `_capcut-paket/` des Projekts auf die
 CUSTOM-Datei umstellen — MP4 hineinkopieren, in `fakten.json` das `mp4`-Feld
 und den `capcut_projektname` (Zusatz „CUSTOM") ändern, die ANLEITUNG und
 `PROMPT-FUER-MAC.txt` auf die neue Datei umschreiben, einen vorhandenen

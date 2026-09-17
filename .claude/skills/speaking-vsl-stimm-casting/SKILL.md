@@ -1,9 +1,9 @@
 ---
 name: speaking-vsl-stimm-casting
-description: "Castet EINMAL je Marke die deutsche Sprecherin einer Speaking-VSL — systematisch gefiltert aus der öffentlichen ElevenLabs-Bibliothek, nie aus den Konto-Standardstimmen, und entschieden per gemessener Tonhöhen-Variation. Nutzen, wenn eine Marke noch keinen Eintrag im Stimmen-Register hat oder Viktor „andere Stimme", „Casting", „die klingt nicht" sagt."
+description: "Die STIMM-VORAUSWAHL einer Speaking-VSL: filtert die öffentliche ElevenLabs-Bibliothek (nie die Konto-Standardstimmen) systematisch auf die Top-5 im Tonhöhen-Band — mit diesen 5 baut der Sprechspur-Bau die GANZE Ad als Varianten, und Viktor wählt an der Audio-Prüfung per Ohr. Nutzen, wenn eine Marke noch keine per Ohr entschiedene Stimme im Register hat oder Viktor „andere Stimme", „Varianten", „Casting", „die klingt nicht" sagt."
 ---
 
-# Stimm-Casting — einmal je Marke, systematisch statt nach Gefühl
+# Stimm-Vorauswahl — die Bibliothek liefert 5, das Ohr entscheidet am ganzen Audio
 
 ## Zwei harte Gesetze
 
@@ -37,7 +37,7 @@ Danach filtern:
 Einsatzzweck → 197 nach Meditations-Ausschluss → 84 nach `descriptive` → die zehn
 mit dem besten Register getestet.
 
-## Entschieden wird gemessen, nicht geraten
+## Die Messung liefert die Vorauswahl, nicht die Entscheidung
 
 Mit jedem der ~10 Finalisten **dieselbe schwere Testzeile** erzeugen — der Hook,
 weil er die Ironie und den Tonwechsel tragen muss. Gleiches Modell, gleiche
@@ -53,23 +53,29 @@ danach `Streuung ÷ Mittelwert`.
 | **25–35 %** | **Band eines natürlichen deutschen Werbe-Reads** |
 | über 35 % | überzeichnet, kippt ins Theatralische |
 
-Zweites Kriterium: die **Dauer der Testzeile gegen ihr Zeitfenster**. Wer schon beim
-Hook 40 % über Budget liegt, zwingt die ganze Ad ins Tempo-Trimmen.
+Zweites Kriterium: die **Dauer der Testzeile gegen ihr Zeitfenster** — wer schon beim
+Hook weit über Budget liegt, zwingt die ganze Ad ins Tempo-Trimmen.
 
-Die höchste Variation im Band gewinnt — bei Gleichstand entscheidet das nähere
-Zeitfenster, danach `use_case = advertisement`.
+**Die Top-5 im Band sind die Vorauswahl** (sortiert nach Variation; bei Gleichstand
+näheres Zeitfenster, dann `use_case = advertisement`). Entschieden wird NICHT hier
+und nie an der Testzeile: Der Sprechspur-Bau baut mit allen 5 die **ganze Spur**
+(gleicher Take-, Montage- und Prüfer-Weg je Variante), und Viktor wählt an der
+**Audio-Prüfung** am echten Audio (Viktors Ansage 21.08.2026 — vorher stand hier
+ein eigenes Testzeilen-Gate; am ganzen Audio hört man Atem, Bögen und Zahlen,
+die eine einzelne Zeile nie zeigt).
 
-**Gemessen im QUA-001-Lauf:** Juli – German 30,8 % · Sissi 28,4 % · Ramona 27,2 % ·
-Irene UGC 25,9 % … Emilia 21,7 %. Zum Vergleich die vorher benutzte amerikanische
-Matilda: 24,7 % — unterhalb des Bands. Das war die Ursache für Viktors Befund
-„klingt nicht nativ".
+**Gemessen im QUA-001-Lauf (Trichter-Beleg):** Juli – German 30,8 % · Sissi 28,4 % ·
+Ramona 27,2 % · Irene UGC 25,9 % … Emilia 21,7 %. Zum Vergleich die vorher benutzte
+amerikanische Matilda: 24,7 % — unterhalb des Bands. Das war die Ursache für Viktors
+Befund „klingt nicht nativ".
 
 ## Ergebnis sichern
 
-Gewinnerin als Zeile in `datenbanken/stimmen/daten.csv`: Marke, `voice_id`, Name,
-Herkunft, Alter, Register, gemessene Variation, gemessene Sprechrate, Modell und alle
-`voice_settings`, Datum. Ab dann liest `sprech-watch` die Stimme dort — **das Casting
-läuft nie wieder für diese Marke**, außer Viktor verlangt es.
+Nach Viktors Wahl an der Audio-Prüfung kommt die Gewinnerin als Zeile in
+`datenbanken/stimmen/daten.csv`: Marke (Kürzel), `voice_id`, Name, Herkunft, Alter,
+Register, gemessene Variation, gemessene Sprechrate, Modell und alle `voice_settings`,
+Datum. Ab dann bauen künftige Läufe der Marke nur noch diese eine Spur — **die
+Vorauswahl läuft nie wieder für diese Marke**, außer Viktor verlangt Varianten.
 
 Aussprache-Lexikon der Marke (Produktname, Zahlen, €-Beträge) daneben unter
 `eintraege/<KÜRZEL>-lexikon.md`.
