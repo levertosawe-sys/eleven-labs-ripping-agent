@@ -37,6 +37,14 @@ die Bildmitte oder aus dem Bild. Deshalb:
 - Position im unteren Fünftel: bei 1280 px Höhe liegt die Textmitte bei ~1040 px
   (≈ 81 %). In CapCut die Y-Position einmal setzen und für alle Untertitel übernehmen.
 
+**Ausnahme mit eigener Bedingung: die Quelle hat eine eigene Untertitel-Fläche.** Brennt
+die Quelle ihre Untertitel auf einen deckenden Balken, bleibt der Balken nach dem Tilgen
+der Buchstaben im Bild — hinter ihm existiert kein Bild, das sich wiederherstellen ließe.
+Dann sitzen die deutschen Untertitel **in der Mitte dieser Fläche**, nicht im unteren
+Fünftel: sonst stehen zwei Balken untereinander. Die Höhe wird an der Fläche gemessen
+(Median der Ober- und Unterkanten aus dem Vollbild-OCR, Mitte ÷ Bildhöhe), nie geschätzt —
+sie fällt je Quelle anders aus. Ohne solche Fläche gilt 81 %.
+
 **Gemessen im QUA-001-Lauf:** Untertitel bei 42 % Höhe gebaut — das ist Bildmitte,
 Viktors Befund: „nicht in der Mitte, sondern etwas weiter nach unten". Ein erster
 Versuch mit dem vollen Sprechtext ergab sechs Zeilen, die oben aus dem Bild liefen.
@@ -72,6 +80,37 @@ mit Zeitfenster, Originalwortlaut und deutschem Vorschlag.
 
 1. `_work/captions.srt` — die Sprech-Untertitel, Zwei-Zeilen-Regel eingehalten,
    Zeitfenster aus den TTS-Takes gemessen (nicht geschätzt).
+
+   **Die Standzeit wird gemessen, nicht geschätzt.** Zu viele und zu lange Zeilen
+   fallen beim Hinsehen auf, eine zu lange Standzeit nicht — darum prüft ein Werkzeug
+   sie, bevor die SRT weitergeht. Im Projektordner ausführen (`<projektstamm>` =
+   Stamm des AWMS-Ordners, `<NNN>` = Ad-Nummer; nur Standardbibliothek, kein venv):
+
+   ```bash
+   python3 <projektstamm>/tools/sp/untertitel_regel.py --srt _work/captions.srt --haeppchen _pipeline/captions<NNN>_haeppchen.json
+   ```
+
+   Die Häppchen-Datei ist die des Captions-Knotens; sie liefert die Wortzeiten.
+   Exit 0 = grün. Exit 1 = Befund, und die Ausgabe nennt jede betroffene
+   Einblendung mit ihrer Standzeit.
+
+   **Bei Befund** dieselbe Zeile um `--kanten _pipeline/clip_karte.json` und
+   `-o _work/captions.srt` erweitern: das Werkzeug schneidet zu lange Einblendungen
+   an Wortgrenzen nach — bevorzugt dort, wo die Szene wechselt — und lässt den
+   Wortlaut unberührt. Es prüft die Wortfolge gegen und bricht bei jeder Abweichung
+   ab, ohne zu schreiben. Danach erneut messen, bis grün.
+
+   Fehlt `_pipeline/clip_karte.json`, das Flag weglassen — dann schneidet es an der
+   größten Sprechpause statt am Szenenwechsel. Fehlt die Häppchen-Datei, teilt es
+   innerhalb der Einblendung proportional zur Zeichenlänge; welche Schnitte so
+   entstanden sind, steht in der Datei aus `--protokoll`. Bleibt eine Einblendung
+   trotz Nachschnitt zu lang, sagt es das mit `BLEIBT LANG` — dann ist der Satz an
+   dieser Stelle unteilbar, und die Zeile wird gekürzt statt der Zeitgrenze
+   verschoben.
+
+   **Drei Zahlen gehören in die Übergabe:** Einblendungen, davon über 3 s, längste
+   Standzeit. Ohne sie ist die Regel nur behauptet.
+
 2. `_work/gestaltungs-text.md` — je Gestaltungs-Text eine Zeile:
    Zeitfenster · Originalwortlaut · Position im Bild · deutscher Vorschlag.
 3. Im Chat: beide Dateien nennen und ausdrücklich sagen, dass NICHTS eingebrannt ist.

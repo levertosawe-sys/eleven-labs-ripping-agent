@@ -26,3 +26,7 @@ __pycache__/
 
 # Konkrete Laeufe bleiben lokal — sie enthalten Marken-Copy und Strategie
 datenbanken/projekte-*/[A-Z][A-Z][A-Z] *
+
+# Selbst gebautes OCR-Binary (aus tools/sp/ocr_vision.swift, je Rechner bauen)
+tools/sp/ocr_vision
+*.bak

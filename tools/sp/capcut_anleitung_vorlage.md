@@ -29,6 +29,24 @@ FERTIGEN Ton-Mix aus Sprechspur + Original-Instrumental: KEINE Musik-Spur dazule
 2. **Mitlese-Stil setzen:** Stil aus `assets/caption-stil-default.json` auf die
    Caption-Spur anwenden (wie in Schritt 7 des Skills sa-captions-capcut).
    Position der Mitlese-Häppchen: unten mittig, Textmitte ≈ 81 % Höhe.
+2b. **Untertitel bearbeitbar machen — PFLICHT, direkt nach Schritt 1.**
+   `draft_bauen()` baut jede Caption als **Textvorlage** nach (so ist der Spender gebaut).
+   Eine CapCut-Textvorlage ist ein verpackter Effekt: Viktor kann sie **nicht anklicken
+   und umtippen**. Genau das war sein Befund am Lauf VIS 010 EL (21.09.2026):
+   „untertitel sind falsch, kann nicht aendern, beim paket ist fehler passiert".
+   ```bash
+   python3 scripts/untertitel_editierbar.py "{NAME}"
+   ```
+   CapCut muss dafuer BEENDET sein — das Skript prueft das selbst und bricht sonst ab.
+   Es nimmt die Bauweise eines Drafts, dessen Untertitel nachweislich bearbeitbar sind,
+   uebernimmt Wortlaut, Zeiten und Y-Position 1:1 und prueft am Ende gegen; bei jeder
+   Abweichung rollt es zurueck und schreibt nichts.
+   **Selbst-Pruefung:** Die Ausgabe muss mit `GRUEN` enden und
+   „0 an Textvorlage" melden. Tut sie das nicht, ist der Draft NICHT abgabefaehig.
+   **Nebenwirkung, die Viktor kennen muss:** Der Stil (z.B. der gelbe Karaoke-Look)
+   steckt IN der Vorlage und geht dabei verloren — die Untertitel tragen danach den Stil
+   des Musters. Farbe und Look setzt Viktor in CapCut mit zwei Klicks, und das geht dann.
+
 3. **Feinschliff — PFLICHT, direkt nach Schritt 1, NIE überspringen. DETERMINISTISCH, nichts von Hand positionieren.**
    Ohne diesen Schritt liegen fette Caption und Mitlese-Häppchen ÜBEREINANDER im
    Untertitel-Band — Viktor sieht dann „zwei Untertitel" (passiert im ROV-007-Lauf,

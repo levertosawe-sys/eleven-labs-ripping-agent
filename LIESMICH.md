@@ -5,10 +5,11 @@ fremden (englischen) Video-Sales-Letter-Ad wird eine eigene, deutsch GESPROCHENE
 gleiche Bilder-Dramaturgie, neue Stimme, neue Copy, eigenes Produkt-Branding, fertig
 geschnitten bis CapCut und Meta-Upload.
 
-**Ehrlicher Stand:** 24 von 27 Bausteinen existieren und liegen bei — die Kette ist in
-echten Läufen bis zum CapCut-Projekt durchgelaufen, inklusive Lip-Sync für sichtbar
-sprechende Menschen. Drei Bausteine sind **Geister** (Ripping-Sheet, Upload-Werkzeug,
-Meta-Werbekonto-Datenbank): in der Workflow-Datei beschrieben, aber nicht im Paket.
+**Ehrlicher Stand (28.09.2026):** 26 von 27 Bausteinen existieren und liegen bei — die
+Kette ist in echten Läufen bis zum CapCut-Projekt durchgelaufen, inklusive Lip-Sync für
+sichtbar sprechende Menschen und Custom Clips, die jeden englischen Bildtext deutsch machen.
+Einziger **Geist** ist das Ripping-Sheet (Software des Betreibers); das Upload-Werkzeug
+liegt als Beschreibung bei, sein Code läuft beim Betreiber.
 
 Die große Schwester dieses Workflows (Singing-VSL: gleiche Kette, aber mit Suno-GESANG
 statt Sprechstimme) ist seit Wochen im Serienbetrieb — ihre Workflow-Datei liegt als
@@ -76,21 +77,26 @@ eleven-labs-ripping-agent/
 │   ├── singing-vsl-clip-karte · speaking-vsl-emotionskarte · speaking-vsl-uebersetzung
 │   ├── singing-vsl-dach-lokalisierung · speaking-vsl-stimm-casting · sprech-watch
 │   ├── speaking-vsl-musikbett · speaking-vsl-lipsync (nur Menschen) · speaking-vsl-captions
-│   └── watch-factcheck · custom-clip-production · ad-upload · execute
+│   ├── watch-factcheck · custom-clip-production · ad-upload · execute
+│   └── sa-captions-capcut             ← CapCut-Export + Untertitel-Stil (geteilt mit der Singing-Kette)
 │
-├── tools/sp/                          ← Sprech-Kette: Bootstrap, Sprechspur, Prüfer, Render, Abnahme, CapCut-Paket
+├── tools/sp/                          ← Sprech-Kette: Bootstrap, Sprechspur, Prüfer, Render, Abnahme,
+│                                         CapCut-Paket, Untertitel, Bildtext (OCR, Etikett-Wort)
 ├── tools/vmake/                       ← Vmake-Client + Schlieren-Scan
+├── tools/sa/kie_bild.py               ← Frame-Edit (Nano Banana 2) + Clip-Animation (Kling) für Custom Clips
+├── tools/ad-upload/                   ← Beschreibung des Upload-Werkzeugs (Code läuft beim Betreiber)
 │
 ├── datenbanken/                       ← Verträge (DATENBANK.md), keine Kundendaten
 │   ├── sp-projekte · sp-brands · sp-learnings (mit learnings.md) · stimmen (mit Steckbrief)
+│   ├── meta-werbekonto (Adressbuch-Vertrag für den Upload)
 │   └── brand-vorlage · projekte-quasi (Vorlagen des ersten Pakets)
 │
 └── referenz/                          ← Erbgut der Singing-Schwester
 ```
 
-Ein Export ist eine **Kopie zu einem Zeitpunkt**, kein Live-Spiegel (Stand: 17.09.2026).
-Ein echtes Beispiel aus einem gelaufenen Fall fehlt noch — diese Linie ist jung; das
-Beispiel entsteht mit dem ersten Lauf und wird dann nachexportiert.
+Ein Export ist eine **Kopie zu einem Zeitpunkt**, kein Live-Spiegel (Stand: 28.09.2026).
+Ein gelaufener Fall liegt als Stimmen-Steckbrief bei (`datenbanken/stimmen/`); die Belege
+hinter jeder Regel stehen in `datenbanken/sp-learnings/learnings.md`.
 
 ---
 

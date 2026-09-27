@@ -7,8 +7,8 @@
 
 ## Deine Rolle — hier ist sie doppelt
 
-Du bist **Operator UND Mitbauer**. Dieser Export ist ein Rahmen: 15 von 26 Bausteinen
-existieren, 11 sind Geister. Das heißt für dich:
+Du bist **Operator UND Mitbauer**. Dieser Export ist ein Rahmen: 26 von 27 Bausteinen
+existieren (Stand 28.09.2026), einziger Geist ist das Ripping-Sheet. Das heißt für dich:
 
 - An **existierenden Knoten** bist du Operator: Skill-Datei lesen, exakt danach arbeiten.
 - An **Geister-Knoten** bist du Mitbauer nach der Use-and-Break-Methode: Das

@@ -17,6 +17,7 @@ Empfängers; die Schlüssel wohnen in einer eigenen `.env`-Datei außerhalb jede
 | `zip`/`rsync` | Übergabe-Pakete | `rsync --version` |
 | Python-Pakete `numpy`, `opencv-python` | Lip-Sync (Gesichter, Blitze, Farbstich) | `python3 -c "import cv2, numpy"` |
 | CapCut auf dem Rechner des MENSCHEN | End-Montage + Sichtung | — |
+| macOS mit `swiftc` (Xcode-Kommandozeilenwerkzeuge) | OCR-Abnahme des Bildtexts über Apple Vision — einmal bauen: `swiftc -O tools/sp/ocr_vision.swift -o tools/sp/ocr_vision` | `swiftc --version` |
 
 ## 2. Konten & Schlüssel
 
@@ -37,10 +38,10 @@ ersten Lauf Kontostände prüfen, statt mittendrin trocken zu laufen.
 |---|---|
 | `inbox/` | Einwurf: Quellvideo + finale Copy |
 | `datenbanken/projekte/` | ein Ordner je Projekt — Karte mit Quell-Hash (Doppel-Rip-Schutz), Transkript, Übersetzung, Befund, finale Copy. Naming-Vorlage: `referenz/projekte-datenbank.DATENBANK.md` |
-| `datenbanken/stimmen/` | das Stimmen-Register: je Brand die gewählte Stimme (voice_id, Design-Prompt, Einstellungen, Aussprache-Lexikon, gemessene Sprech-Rate) — **Geist, entsteht beim Casting** |
+| `datenbanken/stimmen/` | das Stimmen-Register: je Brand die gewählte Stimme (voice_id, Design-Prompt, Einstellungen, Aussprache-Lexikon, gemessene Sprech-Rate) — Vertrag + Beispiel-Steckbrief liegen bei, Einträge entstehen beim Casting |
 | `datenbanken/brand-<kürzel>/` | Brand-Wissen: Produkt-Fakten als Maßstab, Referenzbilder des eigenen Produkts (`Product Reference/`) für die Custom-Clip-Strecke, Lokalisierungs-Log |
 | `brands/<KÜRZEL> - <Name>/<NNN SP>/` | Arbeitsordner je Ad (Pipeline, Song/Sprechspur, Renders, Übergabe-Paket) |
-| `tools/sp/` | die Werkzeug-Skripte der Linie — **Geist, wächst im Use-and-Break** |
+| `tools/sp/` | die Werkzeug-Skripte der Linie — liegen bei (Übersicht: `tools/sp/README.md`), wachsen im Use-and-Break |
 
 ## 4. Was ausdrücklich NICHT im Paket ist
 

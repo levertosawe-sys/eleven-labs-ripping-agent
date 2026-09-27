@@ -30,8 +30,11 @@ Alle Pfade vom Pipeline-Ordner des Projekts aus (`brands/<Brand>/<NNN> EL/` — 
 
 1. **Messen:** `~/.venvs/sa/bin/python3 <projektstamm>/tools/sp/emotions_karte.py
    --bloecke _pipeline/emo_bloecke.json` — je Zeile hört das Gemini-Ohr
-   (gemini-2.5-flash via kie.ai; Anker-Regel: nur Anker-bestandene Modelle
-   dürfen urteilen) den Original-Schnipsel ab und liefert STRICT JSON:
+   (Route: **gemini-2.5-pro über den Kanal `image_url`** als Daten-URI — NICHT
+   `input_audio` und NICHT flash als erste Wahl; über `input_audio` bekommt das
+   Modell gar kein Audio durchgereicht und erfindet die Antwort, gemessen RYZ 002 EL
+   16.09.2026. Das Werkzeug `tools/sp/emotions_karte.py` probiert die Routen bereits
+   in dieser Reihenfolge; Anker-Regel: nur Anker-bestandene Modelle dürfen urteilen) den Original-Schnipsel ab und liefert STRICT JSON:
    Emotion, Ton, Tempo, betonte Wörter, Pausen, v3-Tag-Vorschlag aus der
    festen Tag-Liste des Scripts. Exit 1 = mindestens eine Zeile ohne gültiges
    Urteil → diese Zeilen einzeln nachfahren; bleibt es leer, die Zeile ohne
@@ -77,3 +80,34 @@ Sprechspur-Baus.
 - **Ein Tag wirkt auf das, was NACH ihm kommt.** Tag ans Zeilenende ist wirkungslos.
 - **Karaoke-Wortfarben des Originals sind KEIN Emotions-Signal** — die Farben
   wechseln mechanisch je Wort. Nur das Ohr zählt.
+
+## Wenn das Ohr ausfällt (Ersatzweg, belegt VIS 004 EL 18.09.2026)
+
+Erst messen, ob es wirklich tot ist — in DREI Stufen, nicht einer (ergänzt VIS 004 EL
+19.09.2026, weil die einstufige Prüfung die Ursache nicht trennt):
+1. **Nur-Text-Aufruf** an dieselbe Route („Answer with exactly: OK"). Kommt eine Antwort,
+   läuft der Anbieter und nur der AUDIO-Kanal ist kaputt → Kanal wechseln (image_url).
+   Kommt 500, ist der Dienst unten und kein Kanalwechsel hilft.
+2. **Transkriptions-Test** mit eigenem Schnipsel und BEKANNTEM Wortlaut, Ankerwörter zählen.
+   Antwortet das Modell, ohne die Ankerwörter zu treffen, bekommt es kein Audio — es
+   erfindet. Das ist schlimmer als ein Fehler, weil es wie ein Urteil aussieht.
+3. **Modell-Liste durchgehen.** 422 „model is not supported" heißt: das Modell gibt es auf
+   diesem Konto gar nicht — das ist KEIN Ausfall und darf nicht als solcher gezählt werden.
+Erst wenn Stufe 1 UND 2 bei allen unterstützten Modellen durchfallen, gilt das Ohr als tot —
+mit Datum, Modellnamen und wörtlicher Fehlermeldung im Protokoll.
+Gemessen am 19.09.2026: gemini-2.5-pro 500 „server is currently being maintained",
+gemini-2.5-flash 500 „Network error", gemini-3-flash 500 „internal error";
+gemini-3-pro-preview, gemini-2.0-flash und gemini-2.5-flash-lite antworten 422 (nicht auf
+dem Konto). Auch der Nur-Text-Aufruf fällt durch → Anbieter-Ausfall, kein Kanal-Problem.
+
+Dann wird die Delivery LOKAL gemessen statt geraten (librosa, Original-Tonspur, je SATZ):
+Silben/s · Pegel dB · F0-Median · F0-Spanne (p90−p10) · betonte Wörter über Wort-Energie ·
+Pausen > 0,22 s. **Wendepunkt** = |ΔSilben/s| ≥ 0,45 ODER |ΔF0| ≥ 12 Hz ODER |ΔdB| ≥ 2,5
+gegenüber dem Vorsatz. Jeder Wendepunkt bekommt seinen Tag, Erklär-Sätze bleiben ohne,
+das 8-s-Prüfmaß gilt unverändert.
+
+**Was der Ersatzweg NICHT kann:** Er misst Tempo, Pegel, Tonhöhe, Betonung und Pausen —
+nicht die Emotion selbst. Die Zuordnung Messwert→Tag ist eine Ableitung aus Messung plus
+Clip-Bild. Darum gehört je Zeile der Messbeleg in die Karte (Feld `beleg`), damit der
+Mensch am Gate jede Zuordnung kippen kann, und das Feld `quelle` trägt
+„lokale Messung (Ersatzweg)" statt einer Modell-Route.

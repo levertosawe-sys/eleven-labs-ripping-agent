@@ -155,8 +155,9 @@ Dann das Übergabe-Paket schnüren. Zwei geerbte Gesetze gelten wörtlich:
 liegt bereit“. (2) Übergabe-Pfade zeigen IMMER auf die dauerhafte Werkstatt-Maschine,
 NIE auf einen Wegwerf-Rechenknecht, der morgen gelöscht ist.
 
-**E2 · CapCut-Aufbau am Rechner des Menschen [GEIST]** — Erbgut liegt bei:
-`referenz/sa-captions-capcut.SKILL.md`, Schritte 6–8 — sie gelten hier unverändert:
+**E2 · CapCut-Aufbau am Rechner des Menschen [GEBAUT]** — `.claude/skills/sa-captions-capcut/`
+(Export + Stil-Vorlage) mit `tools/sp/capcut_paket.py` und den Untertitel-Werkzeugen
+`tools/sp/untertitel_*.py`; die Schritte 6–8 des Skills gelten hier unverändert:
 Der Mensch fügt den Ein-Prompt in einen NEUEN lokalen Chat ein; der zieht das Paket per
 rsync, baut den CapCut-Entwurf mit dem Projektnamen, wendet den Karaoke-Stil an,
 Neustart, Bericht. Server-Schritte werden NIE wiederholt.
@@ -169,7 +170,7 @@ als Workflow-/Skill-Änderung zurück (Use and Break) — nie nur als Projekt-Fi
 
 ## Etappe F — Upload
 
-**F1 · Ad-Upload [GEBAUT]** — `skills/ad-upload/`
+**F1 · Ad-Upload [GEBAUT]** — `.claude/skills/ad-upload/` (Werkzeug: `tools/ad-upload/README.md`, Code beim Betreiber)
 Die exportierte MP4 landet im Einwurf-Ordner; im Chat entstehen Primary Text + Headline
 aus der finalen Copy; dann legt das Upload-Werkzeug Video, Anzeigengruppe (1:1 aus einer
 Vorlage-Anzeigengruppe) und Creative an — **die Anzeige IMMER pausiert**, scharf schaltet

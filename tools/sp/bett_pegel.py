@@ -15,7 +15,7 @@ _work/gate/bett_leiter_{0,-3,-6}.mp3 (Sprechspur + Bett bei bett_db, bett_db−3
 für die Audio-Prüfung — Viktor hört und wählt, seine Wahl wird der neue Offset der Marke.
 Exit 1 = Stem oder Spur fehlt, Exit 2 = Kürzel ohne Zeile im Brand-Adressbuch.
 """
-import argparse, csv, json, os, re, subprocess, sys
+import argparse, csv, glob, json, os, re, subprocess, sys
 import numpy as np
 STAMM = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -40,12 +40,22 @@ def offset(kuerzel):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--kuerzel", required=True)
-    ap.add_argument("--vocals", default="_work/demucs_out/htdemucs/original_ton/vocals.wav")
-    ap.add_argument("--rest", default="_work/demucs_out/htdemucs/original_ton/no_vocals.wav")
+    ap.add_argument("--vocals", default=None)
+    ap.add_argument("--rest", default=None)
     ap.add_argument("--sprechspur", default="_work/sprechspur.wav")
     ap.add_argument("--bett", default="_work/musikbett.wav")
     ap.add_argument("--leiter", action="store_true")
     a = ap.parse_args()
+    # Modell-Ordner nicht festnageln: der Skill speaking-vsl-musikbett schreibt htdemucs_ft
+    # vor, aeltere Laeufe liegen unter htdemucs. Reihenfolge = Vorrang des Skills.
+    for feld, name in (("vocals", "vocals.wav"), ("rest", "no_vocals.wav")):
+        if getattr(a, feld) is not None: continue
+        for modell in ("htdemucs_ft", "htdemucs"):
+            p = f"_work/demucs_out/{modell}/original_ton/{name}"
+            if os.path.exists(p): setattr(a, feld, p); break
+        else:
+            gefunden = sorted(glob.glob(f"_work/demucs_out/*/*/{name}"))
+            setattr(a, feld, gefunden[0] if gefunden else f"_work/demucs_out/<modell>/original_ton/{name}")
     for f in (a.vocals, a.rest, a.sprechspur, a.bett):
         if not os.path.exists(f): print(f"fehlt: {f}"); sys.exit(1)
     orig, n_o, N_o = abstand(momentary(a.vocals), momentary(a.rest))

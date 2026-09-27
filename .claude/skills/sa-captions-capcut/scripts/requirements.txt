@@ -1,0 +1,11 @@
+# Die gevendorten Module scripts/captions.py + scripts/capcut_export.py brauchen
+# NUR die Python-Standardbibliothek (Python ≥ 3.10) — nichts installieren.
+#
+# Die übrigen Skill-Schritte brauchen zusätzlich:
+demucs        # Schritt 1: Vocal-Stem (zieht torch — Installation dauert Minuten)
+soundfile     # Schritt 6: exakte Song-Dauer am WAV messen
+#
+# System-Binaries (nicht pip): ffmpeg + ffprobe auf dem PATH (Homebrew: `brew install ffmpeg`),
+# CapCut (Mac-App) mit mindestens EINEM echten, von Hand gebauten Projekt
+# (Clips + Musik + Untertitel) als Schablonen-Spender für capcut_export.spender_finden().
+# Secrets: ElevenLabs-Key liegt NIE im Repo — eigene Key-Datei/ENV, siehe SKILL.md Schritt 3.

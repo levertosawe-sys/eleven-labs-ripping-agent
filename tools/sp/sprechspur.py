@@ -38,8 +38,25 @@ def key():
     sys.exit("ELEVENLABS_API_KEY fehlt — Viktor fragen, nie auf andere Keys ausweichen.")
 
 def stimme(kuerzel):
+    # Die Spalte `marke` traegt die LANGFORM ("VIS - Visiovance"), die Anleitung dieses
+    # Werkzeugs verlangt aber das KUERZEL ("stimme <KUERZEL>"). Wer der Anleitung folgte,
+    # bekam "keine Zeile fuer VIS" — und haette daraus geschlossen, die Marke sei noch nicht
+    # gecastet, obwohl sie es ist (belegt VIS 006 EL, 19.09.2026). Ein unnoetiger
+    # Casting-Lauf kostet Credits. Darum: Kuerzel UND Langform akzeptieren.
+    def passt(feld, gesucht):
+        feld = feld.strip().upper(); gesucht = gesucht.strip().upper()
+        return feld == gesucht or feld.split(" - ")[0].strip() == gesucht
     with open(REGISTER, encoding="utf-8") as f:
-        treffer = [r for r in csv.DictReader(f) if r["marke"].strip().upper() == kuerzel.upper()]
+        zeilen = list(csv.DictReader(f))
+    # Exakte Langform schlaegt alles; beim reinen Kuerzel zaehlen Dialog-Rollen-Zeilen
+    # („VIS - … (Dialog: Experte)") nicht mit, solange es GENAU EINE Standard-Zeile ohne
+    # Klammer-Zusatz gibt — sonst brach `stimme VIS` an drei VIS-Zeilen ab (README-Falle,
+    # VIS 015 EL gemeldet, behoben VIS 021 EL 25.09.2026).
+    exakt = [r for r in zeilen if r["marke"].strip().upper() == kuerzel.strip().upper()]
+    if len(exakt) == 1: return exakt[0]
+    treffer = [r for r in zeilen if passt(r["marke"], kuerzel)]
+    basis = [r for r in treffer if "(" not in r["marke"]]
+    if len(treffer) > 1 and len(basis) == 1: return basis[0]
     if len(treffer) > 1:
         sys.exit(f"Stimmen-Register hat {len(treffer)} Zeilen für {kuerzel} — eine Marke, eine "
                  f"Stimme. Erst aufräumen (die ERSTE Casting-Zeile gilt), dann weiter.")
@@ -86,15 +103,25 @@ def pausen(p, noise="-32dB", mind=0.18):
     return [( s, e ) for s, e in zip(starts, enden)]
 
 def _take_woerter(take):
-    """Scribe-Wortzeiten des Takes (de) — die exakte Schnitt-Grundlage."""
-    import tempfile
+    """Scribe-Wortzeiten des Takes (de) — die exakte Schnitt-Grundlage.
+    CACHE (VIS 017 EL, 25.09.2026; Befund DOG 005 EL „Montage frisst Kontingent"): Scribe hoert jeden
+    Take nur EINMAL. Die Wortzeiten liegen neben dem Take als <take>.woerter-<sha12>.json; jeder weitere
+    montage-/--nur-messen-Aufruf auf demselben Take (gleicher Datei-Hash) liest die Ablage statt das
+    geteilte ElevenLabs-Kontingent erneut zu belasten. Neuer Take = neuer Hash = neuer Scribe-Lauf."""
+    import tempfile, hashlib
+    sha = hashlib.sha256(Path(take).read_bytes()).hexdigest()[:12]
+    ablage = Path(f"{take}.woerter-{sha}.json")
+    if ablage.exists():
+        return json.loads(ablage.read_text(encoding="utf-8"))
     roh = tempfile.mktemp(suffix=".json")
     script = STAMM/".claude"/"skills"/"singing-vsl-transkription"/"scripts"/"transcribe.py"
     r = subprocess.run([sys.executable,str(script),take,"--out",roh,"--sprache","de"],
                        capture_output=True,text=True)
     if r.returncode != 0: return None
     d = json.loads(Path(roh).read_text()); os.remove(roh)
-    return [{"w":w["text"],"s":w["start"],"e":w["end"]} for w in d["woerter"]]
+    woerter = [{"w":w["text"],"s":w["start"],"e":w["end"]} for w in d["woerter"]]
+    ablage.write_text(json.dumps(woerter, ensure_ascii=False), encoding="utf-8")
+    return woerter
 
 # Zahlwoerter fuer das Alignment (YUR-003-EL-Befund 08.09.2026): Die Copy traegt "142.000",
 # der Take spricht "Hundertzweiundvierzigtausend" — ein gehoertes Token gegen zwei geschriebene.
@@ -164,7 +191,28 @@ def cmd_montage(a):
             links = max((v for s,v in abb.items() if s < gi), default=None)
             rechts = min((v for s,v in abb.items() if s >= gi), default=None)
             if links is None or rechts is None: grenzen = None; break
-            t_l = tw[hoer_map[links]]["e"]; t_r = tw[hoer_map[rechts]]["s"]
+            # Die Blockgrenze muss IMMER in die Luecke zwischen zwei gehoerten Woertern
+            # fallen, nie in ein Wort hinein. Gegenbeispiel (VIS 003 EL, 19.09.2026):
+            # Soll-Token "mesozeaxanthin" (Bindestrich verklebt) gegen gehoerte Token
+            # "meso"+"zeaxanthin" -> difflib ordnet das Wort NICHT zu, links zeigt auf
+            # "bin" davor, rechts auf "ich" danach, und die Mitte zwischen beiden liegt
+            # mitten in "Meso-Zeaxanthin" (8,56-10,06 s). Der Schnitt kappte das Wort
+            # zu "m--" und der Markenname fehlte in der Ad.
+            # Fix: linke Kante ist das gehoerte Wort UNMITTELBAR vor dem ersten Wort des
+            # naechsten Blocks — unabhaengig davon, ob difflib es zuordnen konnte.
+            i_r = hoer_map[rechts]
+            # Unzugeordnete Soll-Woerter AM BLOCKANFANG (VIS 020 EL, 25.09.2026): Scribe hoerte
+            # "Folgt" statt "Folg" -> difflib ordnet das erste Wort des Blocks nicht zu, "rechts"
+            # zeigt erst auf "der", und die Grenze fiel zwischen "Folgt" und "der" — das erste Wort
+            # klebte am VORIGEN Block ("...passiert. Folg · 0,5 s · der Luft"). Fix: je nicht
+            # zugeordnetem Soll-Wort vor dem ersten Treffer ein gehoertes Wort zurueckgehen, aber
+            # nie ueber das letzte zugeordnete Wort des linken Blocks hinaus.
+            s_r = min((sx for sx in abb if sx >= gi), default=None)
+            k_frei = (s_r - gi) if s_r is not None else 0
+            if k_frei > 0:
+                i_r = max(hoer_map[links] + 1, i_r - k_frei)
+            i_l = max(hoer_map[links], i_r - 1)
+            t_l = tw[i_l]["e"]; t_r = tw[i_r]["s"]
             grenzen.append((t_l + t_r) / 2); wort_e.append(t_l); wort_s.append(t_r)
         if grenzen: grenzen.append(take_d); wort_e.append(tw[-1]["e"])
         else: wort_s = None
@@ -181,6 +229,34 @@ def cmd_montage(a):
         grenzen.append(take_d)
         print("Hinweis: Scribe-Alignment nicht möglich — Zeichen-Anteils-Schnitt benutzt.", file=sys.stderr)
     if not tw: wort_s = None
+    # Entartete Blockgrenzen abfangen (VIS 001 EL, 18.09.2026): Findet difflib die Woerter eines
+    # Blocks im gehoerten Strom nicht wieder — typisch bei einem EINWORT-Block mit ungewoehnlichem
+    # Kompositum, das Scribe getrennt hoert ("Blutzuckerneutral" -> "Blut Zucker neutral") —, fallen
+    # linke und rechte Grenze auf denselben Wert. ffmpeg starb daran mit "-to value smaller than -ss"
+    # und nannte weder Block noch Text. Jetzt: melden, welcher Block es ist, und die Grenze aus den
+    # Nachbarn interpolieren statt abzustuerzen.
+    entartet = [i for i in range(len(marken)) if grenzen[i+1] - grenzen[i] < 0.12]
+    if entartet:
+        for i in entartet:
+            print(f"WARNUNG Block {i} ohne eigene Laenge (Grenze {grenzen[i]:.3f}s = {grenzen[i+1]:.3f}s): "
+                  f"{marken[i]['text'][:60]!r} — Scribe hat diese Woerter im Take nicht wiedergefunden. "
+                  f"Grenze aus den Nachbarn interpoliert; Zeile pruefen (Einwort-Block? Kompositum?).",
+                  file=sys.stderr)
+        # gleichmaessig zwischen der letzten guten linken und der naechsten guten rechten Grenze
+        i = 0
+        while i < len(marken):
+            if grenzen[i+1] - grenzen[i] >= 0.12: i += 1; continue
+            j = i
+            while j < len(marken) and grenzen[j+1] - grenzen[j] < 0.12: j += 1
+            links, rechts = grenzen[i], grenzen[min(j, len(grenzen)-1)]
+            n = j - i + 1
+            for k in range(1, n):
+                grenzen[i+k] = links + (rechts - links) * k / n
+            if wort_s:
+                for k in range(i, min(j+1, len(wort_s))):
+                    wort_s[k] = grenzen[k] + 0.05
+                    wort_e[k] = grenzen[k+1] - 0.05
+            i = j + 1
     teile = []
     protokoll = []
     messung = []

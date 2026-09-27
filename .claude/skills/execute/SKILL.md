@@ -1,26 +1,26 @@
 ---
 name: execute
 awms: system
-description: Einen AWMS-Workflow ausführen — workflows/<name>.json als Arbeitsanweisung Knoten für Knoten abarbeiten, Gate-Dokumente schreiben und selbst entscheiden statt zu warten (Halt nur bei unbeantwortbaren Fragen), Datenbanken laut Kanten lesen/schreiben. Läuft automatisch im Hintergrund an, sobald Gaylord einen Workflow meint — „mach X", „starte X", „führe X aus" — oder den Trigger eines Workflows auslöst (z.B. eine Datei reinwirft, die zu einem Trigger passt) oder fragt, wie er einen Workflow laufen lässt. Kein Befehl, den Gaylord rufen muss.
+description: Einen AWMS-Workflow ausführen — workflows/<name>.json als Arbeitsanweisung Knoten für Knoten abarbeiten, Gate-Dokumente schreiben und selbst entscheiden statt zu warten (Halt nur bei unbeantwortbaren Fragen), Datenbanken laut Kanten lesen/schreiben. Läuft automatisch im Hintergrund an, sobald der Nutzer einen Workflow meint — „mach X", „starte X", „führe X aus" — oder den Trigger eines Workflows auslöst (z.B. eine Datei reinwirft, die zu einem Trigger passt) oder fragt, wie er einen Workflow laufen lässt. Kein Befehl, den der Nutzer rufen muss.
 ---
 # execute — ein Workflow-Lauf (System-Skill)
 
-Die Workflow-Datei ist die Arbeitsanweisung. Du bist der Operator; Gaylord entscheidet, was nur er
+Die Workflow-Datei ist die Arbeitsanweisung. Du bist der Operator; der Nutzer entscheidet, was nur er
 entscheiden kann — alles andere entscheidest du und legst es ihm vor.
 
 1. **Workflow laden:** Lies `workflows/<name>.json`. Ist unklar, welcher gemeint ist:
    EINE Frage mit der Namensliste. Passt eine reingeworfene Datei zum Trigger eines
    Workflows, nimm den und leg los.
-1b. **Rechenort wählen — vor dem ersten Knoten.** Frag Gaylord, WO dieser Lauf
+1b. **Rechenort wählen — vor dem ersten Knoten.** Frag den Nutzer, WO dieser Lauf
    rechnet, und leg ihm dafür die ECHTE Lage vor (nie aus dem Gedächtnis — Rechner
    kommen und gehen): welche Maschinen gerade verfügbar sind, je mit Name · Ort ·
-   Adresse · Status, dazu immer die Option „lokal". Gaylords Wahl gilt für den
+   Adresse · Status, dazu immer die Option „lokal". Die Wahl des Nutzers gilt für den
    GANZEN Lauf: Heavy-Arbeit (ffmpeg, Whisper, Demucs, Renders, große Downloads)
    läuft auf dem gewählten Rechner; APIs und Schlüssel bleiben lokal. Die Wahl in
    das Lauf-Artefakt schreiben, das der Workflow ohnehin anlegt (z.B. die
    Projekt-Karte) — so kennt ein Wiedereinstieg sie; legt der Workflow keins an,
    gilt die Wahl für diese Session und wird beim Wiedereinstieg neu gefragt. Nennt
-   ein Skill der Kette selbst einen Rechenort, gewinnt Gaylords Wahl aus dieser
+   ein Skill der Kette selbst einen Rechenort, gewinnt die Wahl des Nutzers aus dieser
    Frage. Gibt es keine Fernrechner, die Frage trotzdem stellen — dann mit den
    Optionen „lokal" und „Adresse von dir".
 
@@ -33,7 +33,7 @@ entscheiden kann — alles andere entscheidest du und legst es ihm vor.
      Der Lauf nimmt für jede Frage die belegte beste Option und arbeitet weiter; er hält
      nur an, wo eine Frage aus dem Material nicht beantwortbar ist. Siehe „Gates: entscheiden
      statt warten" unten. Was der Lauf selbst entschied, steht gesammelt am letzten Gate.
-   - **tool:** Laut README aufrufen. Existiert (noch) kein Code, ehrlich sagen und Gaylord
+   - **tool:** Laut README aufrufen. Existiert (noch) kein Code, ehrlich sagen und dem Nutzer
      das Nötige für den Hand-Schritt übergeben (z.B. fertiges Skript für seine App).
    - **Knoten mit `bedingung`:** Das Feld nennt ein Merkmal und die Datei, in der es
      steht (z.B. `Registry: sprache = de` → Feld `sprache` im Eintrag der Linie in
@@ -43,10 +43,10 @@ entscheiden kann — alles andere entscheidest du und legst es ihm vor.
      und gelesenem Wert nennen. Nennt eine `bedingung` mehrere Merkmale (mit UND
      verbunden), müssen alle zutreffen; Merkmale, die in keiner Datei stehen, sondern im
      Auftrag (dem Text, der den Trigger auslöste), liest du dort nach. Steht die Datei nicht da oder fehlt das Feld, ist das
-     kein „trifft nicht zu": STOPP und Gaylord fragen — sonst fällt ein halber
+     kein „trifft nicht zu": STOPP und den Nutzer fragen — sonst fällt ein halber
      Sprachzweig lautlos aus dem Lauf.
    - **Geist (Datei fehlt):** Nicht stillschweigend improvisieren. Sag „Knoten X ist noch
-     ungebaut", mach den Schritt einmalig MIT Gaylord von Hand — und schlag danach in
+     ungebaut", mach den Schritt einmalig MIT dem Nutzer von Hand — und schlag danach in
      einem Satz vor, ihn per /skillcatch zu bauen.
 3. **Verzweigungen:** beide Zweige abarbeiten; der Merge-Knoten bekommt beide Ergebnisse.
    **Mehrere Läufe** (z.B. zwei Ads): nacheinander, je Lauf ein sauberer Durchgang.
@@ -59,13 +59,13 @@ entscheiden kann — alles andere entscheidest du und legst es ihm vor.
      `{"ts":"<ISO-Zeit>","workflow":"<workflow-name>","anbieter":"<anbieter>","modell":"<modell-id>","menge":<Credits>}`.
      `anbieter`/`modell` so schreiben, wie der Aufruf sie nennt (z.B. `kie.ai` /
      `kling-3.0/video`) — sonst ist später nicht auswertbar, was das Geld gekostet hat.
-   Kein Pflege-Ritual für Gaylord — das erledigt die KI beim Lauf.
+   Kein Pflege-Ritual für den Nutzer — das erledigt die KI beim Lauf.
 4. **Lauf-Bericht am Ende, kurz:** was produziert wurde, was in welche Datenbank
    geschrieben wurde, an welchen Stellen gestoppt/offen. Keine Schönfärberei.
 
 Nie: ein Gate-Dokument weglassen · einen Selbst-Entscheid verschweigen · fehlende Bausteine
 verschweigen · Ergebnisse nur im Chat lassen, wenn eine schreibt-Kante eine Datenbank nennt ·
-den Workflow „verbessern", ohne dass Gaylord es entschieden hat (Änderungswünsche → Datei
+den Workflow „verbessern", ohne dass der Nutzer es entschieden hat (Änderungswünsche → Datei
 ändern, das ist ein eigener Schritt).
 
 ## Gates: entscheiden statt warten
@@ -134,7 +134,7 @@ Wert genannt. Ein Knoten ohne `bedingung` hat keine Ausnahme.
 ablaufende Maschine, nicht ein langer Lauf, nicht „das dauert Stunden". Ein
 Workflow hat keine Deadline — er hat eine Kette. Läuft eine äußere Frist gegen
 die Vollständigkeit (Server wird gelöscht, Kontingent endet), ist das ein
-**Entscheidungspunkt für Gaylord, kein Spielraum für dich**: Frist, Restaufwand
+**Entscheidungspunkt für den Nutzer, kein Spielraum für dich**: Frist, Restaufwand
 und Optionen nennen und ihn wählen lassen. Er entscheidet, was ein Ergebnis wert
 ist — nie die KI im Alleingang.
 
@@ -146,7 +146,7 @@ zulässig — es dokumentiert nur den Regelbruch.**
 
 | Ausrede | Warum sie nicht zählt |
 |---|---|
-| „Aus Zeitgründen übersprungen." | Der Workflow kennt keine Zeitgründe. Kollidiert eine Frist mit der Kette, fragst du Gaylord — das ist seine Entscheidung, nicht deine. |
+| „Aus Zeitgründen übersprungen." | Der Workflow kennt keine Zeitgründe. Kollidiert eine Frist mit der Kette, fragst du den Nutzer — das ist seine Entscheidung, nicht deine. |
 | „Die anderen Prüfungen waren grün, dieser Loop bringt nichts Neues." | Jede Prüfung existiert, weil genau ihre Fehlerklasse durch alle anderen rutscht. Wüsstest du das Ergebnis, bräuchte es die Prüfung nicht. |
 | „Der Schritt ist optional / eine Feinpolitur." | Steht er auf einer `haupt`-Kante, ist er Pflicht. Was bedingt sein soll, trägt eine `bedingung` mit prüfbarem Merkmal — alles andere läuft. |
 | „Die Bedingung trifft hier sicher nicht zu." | Sicherheit ohne gelesene Datei ist ein Rateschluss. Erst die Stelle aufschlagen, dann entscheiden. |
@@ -154,7 +154,7 @@ zulässig — es dokumentiert nur den Regelbruch.**
 | „Die Maschine wird gleich gelöscht, ich rette lieber das Ergebnis." | Ergebnis sichern UND fragen. Ein unvollständiger Lauf, der gesichert wurde, bleibt unvollständig. |
 | „Das Ergebnis ist schon gut genug." | Gut genug heißt: Jeder Prüfschritt ist gelaufen und grün — nicht: Der Rest wäre wohl in Ordnung. Selbst entscheiden darfst du (siehe „Gates: entscheiden statt warten"), Prüfungen überspringen nie. |
 
-Rote Flaggen — jeder dieser Gedanken heißt STOPP und Rückfrage an Gaylord:
+Rote Flaggen — jeder dieser Gedanken heißt STOPP und Rückfrage an den Nutzer:
 „aus Zeitgründen …" · „das reicht auch so" · „ich lasse nur diesen einen weg" ·
 „das hole ich nach" · „hier ist es anders, weil …".
 

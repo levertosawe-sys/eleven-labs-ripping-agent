@@ -15,8 +15,13 @@ ap.add_argument("--start", type=float, default=0.10); ap.add_argument("--ende", 
 ap.add_argument("--kanten", help="Clip-Karte (_pipeline/clip_karte.json): Marken, deren Original-Stempel auf einer "
                 "Schnittkante liegen (±0,25 s), bleiben dort verankert — nur Marken mitten im Clip wandern")
 ap.add_argument("--toleranz", type=float, default=0.25)
+ap.add_argument("--soll", help="marken.json mit den ORIGINAL-Stempeln (vor der ersten Planung). "
+                "Liegt sie vor und bleibt Luft uebrig, beginnt jeder Block fruehestens an seinem "
+                "Original-Stempel — die Luft verteilt sich dann wie im Original, statt sich als ein "
+                "Loch vor dem naechsten Anker zu sammeln (belegt VIS 006 EL: 4,04 s Stille vor dem Offer).")
 a = ap.parse_args()
 mess = json.load(open(a.messung)); marken = json.load(open(a.marken))
+soll = [m["start"] for m in json.load(open(a.soll))] if a.soll else None
 ende = a.ende or mess["video_s"]; atem = mess["atem"]
 d = [b["sprechdauer"] for b in mess["bloecke"]]
 
@@ -40,7 +45,17 @@ for g, start_i in enumerate(idx):
     bloecke = list(range(start_i, end_i)); bedarf = sum(d[i] for i in bloecke) + atem * len(bloecke)
     scale = min(1.0, (t1 - t0) / bedarf) if bedarf else 1.0
     t = t0
-    for i in bloecke:
+    for n, i in enumerate(bloecke):
+        # Bleibt Luft übrig (scale == 1), NICHT dicht packen: sonst sammelt sich der
+        # ganze Überschuss als EIN Loch vor dem nächsten Anker. Bei VIS 006 EL waren das
+        # 4,04 s Stille direkt vor dem Offer — mitten in der Ad (sp-learnings 30: „Der Weg
+        # zu null toter Luft ist eine Schleife"). Stattdessen darf jeder Block frühestens
+        # an seinem ORIGINAL-Stempel beginnen, solange der Rest noch hineinpasst. Das
+        # verteilt die Luft dorthin, wo sie im Original auch war, statt sie zu häufen.
+        if soll is not None and scale >= 1.0:
+            rest = sum(d[j] for j in bloecke[n:]) + atem * len(bloecke[n:])
+            spaetest = t1 - rest
+            t = min(max(t, soll[i]), max(t, spaetest))
         marken[i]["start"] = round(t, 2); t += d[i] * scale + atem; marken[i]["ende"] = round(min(t, t1), 2)
     marken[end_i - 1]["ende"] = round(t1, 2)
     f = 1 / scale; schlimmster = max(schlimmster, f)

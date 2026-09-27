@@ -28,10 +28,20 @@ für Trenn-Artefakte nicht (Kontroll-Snippet: unberührtes Suno-Instrumental bek
 **Genau hinhören, bevor „keine Musik" behauptet wird:** Ein mean-dB-Wert aus einem
 3-Sekunden-Fenster taugt nicht — Ads wechseln zwischen Effekt-Passagen (Hook: nur
 Whooshs) und Musik-Passagen. Prüfung: Rest-Stem in drei 8-s-Schnipseln (Anfang,
-Mitte, Ende) ans Gemini-Ohr (kie.ai gemini-2.5-flash, `input_audio`): „Musik
-vorhanden? Instrumente, Tempo, Effekte, Rest-Stimme?" Sagt das Ohr an ALLEN drei
-Stellen „keine Musik", darf ein eigenes Instrumental hinzukommen (Suno V5, kie.ai,
-Skill `background-music-suno`, Pegel wie oben gemessen) — sonst nie.
+Mitte, Ende) ans Gemini-Ohr — Route **gemini-2.5-pro über den Kanal `image_url`**
+als Daten-URI, NICHT `input_audio` und NICHT flash als erste Wahl: über `input_audio`
+bekommt das Modell gar kein Audio durchgereicht und erfindet die Antwort (gemessen
+RYZ 002 EL 16.09.2026; Schnipsel klein und mono halten, 8–10 s bei 48 kbit/s, sonst
+Timeout). Frage: „Musik vorhanden? Instrumente, Tempo, Effekte, Rest-Stimme?" Sagt das
+Ohr an ALLEN drei Stellen „keine Musik", darf ein eigenes Instrumental hinzukommen
+(Suno V5, kie.ai, Skill `background-music-suno`, Pegel wie oben gemessen) — sonst nie.
+
+**Ist das Ohr ausgefallen** (alle Routen mit eigenem Schnipsel bekannten Wortlauts
+getestet und durchgefallen), wird „keine Musik" NICHT behauptet: Dann entscheidet die
+Messung am Rest-Stem — Bandbreite, Spektral-Flachheit und Pegelverlauf über die ganze
+Länge statt eines 3-s-Fensters — und das Ergebnis geht als Hörprobe (kleines MP4 mit
+Wellenform) an Viktor. Ein eigenes Instrumental kommt in diesem Fall nur auf seinen
+Zuruf dazu, nie automatisch.
 
 ## Ablauf
 

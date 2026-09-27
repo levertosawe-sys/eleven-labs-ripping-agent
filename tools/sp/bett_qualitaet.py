@@ -11,10 +11,17 @@ CWD = Pipeline-Ordner. Aufruf:
   python3 bett_qualitaet.py [--vocals …] [--bett …] [--schwelle 5]
 Misst je 2048-Sample-Frame die Sprachband-Energie des Betts in den Frames, in denen die
 Original-Stimme laut ist (oberes 40 %), gegen ihre Pausen (unterstes 15 %) — Differenz =
-Loch-Tiefe; dazu das gleiche für 3,4–8 kHz. Exit 0 = sauber (Loch < Schwelle), Exit 3 =
-nicht sauber → Nachbau-Weg laut speaking-vsl-musikbett. Schreibt _work/bett_qualitaet.json.
+Loch-Tiefe; dazu das gleiche für 3,4–8 kHz. Schreibt _work/bett_qualitaet.json.
+
+WICHTIG — die Zahl ist ein BELEG, kein Auftrag. Die frühere Auto-Regel „Loch >= Schwelle
+→ Nachbau" ist von Viktor WIDERLEGT und aufgehoben (Workflow „Eleven Labs Ripping Agent",
+Notiz 28, ARE 008 EL 08.09.2026): Er hörte den Extrakt (7,0 dB Loch!) gegen zwei
+Suno-Nachbauten und entschied „A ist gut". Das Extrakt bleibt darum IMMER das
+Standard-Bett; ein Nachbau läuft nur auf Viktors Zuruf am Gate („nicht clean"), nie
+von selbst. Exit 3 heißt deshalb nur „über der Schwelle, in den Lauf-Bericht damit" —
+nicht „jetzt nachbauen".
 """
-import argparse, json, os, sys
+import argparse, json, os, sys, glob
 import numpy as np, soundfile as sf
 
 def load(p):
@@ -26,12 +33,23 @@ def stft(x, N=2048, H=1024):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--vocals", default="_work/demucs_out/htdemucs/original_ton/vocals.wav")
+    ap.add_argument("--vocals", default=None)
     ap.add_argument("--bett", default="_work/musikbett.wav")
     ap.add_argument("--schwelle", type=float, default=5.0)
     a = ap.parse_args()
+    # Modell-Ordner nicht festnageln: der Skill speaking-vsl-musikbett schreibt htdemucs_ft
+    # vor, aeltere Laeufe liegen unter htdemucs. Reihenfolge = Vorrang des Skills.
+    if a.vocals is None:
+        for modell in ("htdemucs_ft", "htdemucs"):
+            p = f"_work/demucs_out/{modell}/original_ton/vocals.wav"
+            if os.path.exists(p): a.vocals = p; break
+        else:
+            gefunden = glob.glob("_work/demucs_out/*/*/vocals.wav")
+            if gefunden: a.vocals = sorted(gefunden)[0]
+            else: print("fehlt: _work/demucs_out/<modell>/original_ton/vocals.wav"); sys.exit(1)
     for f in (a.vocals, a.bett):
         if not os.path.exists(f): print(f"fehlt: {f}"); sys.exit(1)
+    print(f"[bett_qualitaet] vocals: {a.vocals}")
     vo, sr = load(a.vocals); re_, sr2 = load(a.bett)
     if sr2 != sr: print("Abtastraten ungleich — Bett auf die Rate der Stems bringen"); sys.exit(1)
     n = min(len(vo), len(re_)); SV = stft(vo[:n]); SR = stft(re_[:n]); f = np.fft.rfftfreq(2048, 1/sr)
@@ -44,9 +62,9 @@ def main():
     sauber = loch < a.schwelle
     out = {"bett": a.bett, "loch_sprachband_db": round(loch, 1), "loch_hoehen_db": round(loch_hi, 1),
            "korrelation_bett_stimme": round(korr, 2), "schwelle_db": a.schwelle, "sauber": sauber,
-           "regel": "Loch = Bett-Energie in Original-Sprechpausen minus bei lauter Original-Stimme; ab Schwelle klingt das Bett unter einer anderen Stimme nicht clean → Nachbau"}
+           "regel": "Loch = Bett-Energie in Original-Sprechpausen minus bei lauter Original-Stimme. BELEG, kein Auftrag: Nachbau nur auf Viktors Zuruf am Gate (Notiz 28, ARE 008 EL — Extrakt mit 7,0 dB Loch wurde als gut abgenommen)"}
     os.makedirs("_work", exist_ok=True); json.dump(out, open("_work/bett_qualitaet.json", "w"), ensure_ascii=False, indent=1)
-    print(f"Loch Sprachband {loch:.1f} dB · Höhen {loch_hi:.1f} dB · Korrelation Bett↔Stimme {korr:+.2f} → {'SAUBER' if sauber else 'NICHT SAUBER (Nachbau)'} (Schwelle {a.schwelle} dB)")
+    print(f"Loch Sprachband {loch:.1f} dB · Höhen {loch_hi:.1f} dB · Korrelation Bett↔Stimme {korr:+.2f} → {'unter der Schwelle' if sauber else 'UEBER der Schwelle'} (Schwelle {a.schwelle} dB) — Beleg fuer den Lauf-Bericht; Extrakt bleibt Standard-Bett, Nachbau nur auf Viktors Zuruf")
     sys.exit(0 if sauber else 3)
 
 if __name__ == "__main__": main()

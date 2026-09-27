@@ -1,6 +1,6 @@
 ---
 name: "custom-clip-production"
-description: "Ersetzt die Produkt-Clips einer Resync-Ad (Competitor-Branding) durch neu animierte Custom Clips mit dem eigenen Produkt der laufenden Brand-Linie — Frame-Edit + Kling-Kette + Schnitt auf Originallänge + Handlungs-Prüfer. Nutzen, wenn Viktor sagt „Custom Clips", „Produkttausch", „ersetz das Produkt in den Clips", „rebrand die Clips" — oder wenn die Clip-Karte eines Laufs Clips mit sichtbarem Produkt markiert hat. Auch ohne diese Wörter nutzen, sobald eine fertige oder laufende Rip-Ad Competitor-Packaging zeigt, das nicht mehr ausgespielt werden darf (Rebranding, DMCA)."
+description: "Ersetzt die Produkt-Clips einer Resync-Ad (Competitor-Branding) durch neu animierte Custom Clips mit dem eigenen Produkt der laufenden Brand-Linie und holt englischen Text im Bild (Titel, Aufschriften, Wand-Logos, Einblendungen, Endcard) per Custom Clip ins Deutsche. Nutzen, wenn Viktor sagt „Custom Clips", „Produkttausch", „ersetz das Produkt in den Clips", „rebrand die Clips", „alles Englische im Bild auf Deutsch", „Titel/Endcard eindeutschen", „mit Start Frame und End Frame" — oder wenn die Clip-Karte eines Laufs Clips mit sichtbarem Produkt oder Szenen-Text markiert hat. Auch ohne diese Wörter nutzen, sobald eine fertige oder laufende Rip-Ad Competitor-Packaging zeigt, das nicht mehr ausgespielt werden darf (Rebranding, DMCA)."
 ---
 
 # Skill — Custom-Clip-Production (Produkt-Clips rebranden)
@@ -16,14 +16,14 @@ zu Ende führt und (c) exakt die Länge des Original-Clips hat.
 
 Die Clip-Karte (`.claude/skills/singing-vsl-clip-karte/SKILL.md`) markiert beim
 Kartieren jeden Clip, in dem das Produkt oder seine Verpackung sichtbar ist.
-Ablage der Markierung: `[projekt]/_work/clips/custom_clips.json` — eine Zeile je
-markiertem Clip:
+Ablage der Markierung: `[projekt]/_work/clips/custom_clips.json` — eine JSON-Liste, ein
+Eintrag je markiertem Clip (Text-Clips: einer je Fenster, Abschnitt 10):
 
 ```json
 {"clip": 285, "t0": 570.08, "t1": 572.17, "dauer": 2.08, "form": "sachet", "grund": "Sachet frontal in die Kamera, Logo gross lesbar", "referenzbild": "<brandDb>/Product Reference/<referenz-datei>"}
 ```
 
-`referenzbild` ist Pflicht in JEDER Zeile: der volle Pfad der Referenz-Datei, die
+`referenzbild` ist Pflicht in JEDER Zeile mit Produkt: der volle Pfad der Referenz-Datei, die
 laut Steckbrief zur `form` gehört. Jeder Edit läuft gegen genau dieses Bild, und
 sein Label wird wortwörtlich kopiert — ohne das Feld in der Zeile greift beim
 Produzieren irgendwann ein Edit auf ein beschriebenes statt gezeigtes Design
@@ -33,7 +33,10 @@ zurück, und die Labels driften (erfundene Zweitzeilen, Schreibvarianten).
 welche Referenz-Datei in den Edit geht. Zwei Werte gelten für jede Brand:
 `screen` = das Produkt erscheint auf einem Bildschirm im Bild (Shop-Seite, Handy),
 `sonstiges` = alles, wofür der Steckbrief keine Referenz hat (z. B. Produkt-Berg
-im Hintergrund).
+im Hintergrund). Ein dritter Wert gilt ebenfalls für jede Brand: `text` = englischer
+Text im Bild, ohne dass ein Produkt umgebrandet werden muss (Titel, Aufschrift, Wand-Logo,
+Einblendung, Endcard; ein unbeschriftetes oder eigenes Produkt darf im Bild stehen) — er
+läuft nach Abschnitt 10.
 
 Alle übrigen Werte sind **produktform-Namen der jeweiligen Brand** und stehen in
 ihrem `produkt-steckbrief.md` (Abschnitt 2) — z. B. `sachet` und `dose` bei einer
@@ -60,20 +63,20 @@ fremden Brand.
 
 1. Kürzel der Linie aus dem Auftrag nehmen (z. B. `QUA`, `RES`, `ROV`) — es steht
    im Projektnamen `KÜRZEL NNN | DATUM`.
-2. In `Longform-Singing-VSL-Agent/datenbanken/linien/linien.json` den Eintrag
+2. In `datenbanken/linien/linien.json` (im AWMS-Stamm) den Eintrag
    dieses Kürzels lesen. Das Feld `brandDb` nennt die Brand-Datenbank, z. B.
-   `datenbanken/brand-resilia`. Diese Datenbanken wohnen im Stamm-Projekt, also
-   unter `/root/AWMS/`.
-3. Referenz-Ordner ist damit `/root/AWMS/<brandDb>/Product Reference/`.
+   `datenbanken/brand-resilia`, relativ zum AWMS-Stamm.
+3. Referenz-Ordner ist damit `<AWMS-Stamm>/<brandDb>/Product Reference/`.
 
 **Der Steckbrief ist die Marken-Wahrheit.** In diesem Ordner liegt
 `produkt-steckbrief.md`: Wortmarke, Referenz-Datei je `form`, die
 Verpackungs-Beschreibung für den Edit-Prompt und der Render-Stil. Er wird VOR dem
 ersten Edit gelesen — die Prompt-Vorlage in Abschnitt 4 füllt sich aus ihm.
 
-**Fehlt der Steckbrief oder ist der Ordner leer:** STOPP, nichts improvisieren,
-keine Referenz einer anderen Brand ausleihen. Viktor melden, dass die Linie noch
-kein Custom-Clip-Onboarding hatte (`.claude/skills/custom-clip-onboarding`).
+**Fehlt der Steckbrief oder ist der Ordner leer:** STOPP (nicht für `form: text`,
+siehe Abschnitt 10), nichts improvisieren,
+keine Referenz einer anderen Brand ausleihen. Viktor per Popup melden, dass die Linie
+noch kein Custom-Clip-Onboarding hatte.
 
 Die Referenz-Datei ist die Wahrheit für Farben, Layout und Produktsymbol. Details,
 die die aktuelle Verpackung trägt, die Referenz-Datei aber nicht zeigt, stehen als
@@ -97,6 +100,9 @@ Handlung des Originals muss im Custom Clip vorkommen und ZU ENDE geführt werden
 ein angefangenes Lächeln endet als Lächeln, eine Zeigegeste kommt beim Ziel an.
 
 ## 4. Frame-Bau (NUR der Start-Frame)
+
+Gilt für Clips mit Produkt (`form` aus dem Steckbrief). Clips mit `form: text` laufen
+nach Abschnitt 10.
 
 Jeder Custom Clip wird aus GENAU EINEM bearbeiteten Frame gebaut: dem
 Start-Frame des Original-Clips. Es gibt keinen End-Frame-Edit — zwei
@@ -376,3 +382,104 @@ und den `capcut_projektname` (Zusatz „CUSTOM") ändern, die ANLEITUNG und
 `PROMPT-FUER-MAC.txt` auf die neue Datei umschreiben, einen vorhandenen
 `CAPCUT-GEPUSHT`-Marker entfernen. Caption-Timings NICHT neu rechnen — die
 Tonspur ist unverändert, die alten Timings gelten exakt weiter.
+
+## 10. Szenen-Text ohne umzubrandendes Produkt (`form: text`)
+
+Welche Texte ersetzt werden, sagt der Workflow (`workflows/Eleven-Labs-Ripping-Agent.json`,
+Knoten `custom-clips`): jeder englische Text im Bild — 3D-/Szenen-Titel, Aufschriften auf
+Figuren und Objekten, Wand-Logos, Einblendungen, Endcard-Prägungen. Den vollständigen Weg mit
+Befehlen, Pfaden, Muster-Skripten und gemessenen Maßstäben enthält `references/szenen-text.md`
+— vor dem ersten Text-Clip eines Laufs ganz lesen.
+
+Warum zwei Frames statt einem: Beim Szenen-Text bewegt sich meist die Kamera (Titel scrollt aus
+dem Bild, Fahrt auf eine Figur). Mit nur dem Start-Frame erfindet Kling die Fahrt; der End-Frame
+legt fest, wo der Clip landet — so trifft er den Folge-Schnitt. Das Morph-Risiko aus Abschnitt 4
+fangen zwei Regeln ab: Frames nur als Composite der Textkästen, End-Frame je nach Lage des Textes
+fest gebaut (Referenz Abschnitt 5).
+
+Was für `form: text` gilt:
+
+| Abschnitt | gilt? |
+|---|---|
+| 1 Eingang | ja — ein Eintrag je Text-Fenster mit `form: "text"`, Schema: Referenz 1 (der Frame ist seine eigene Referenz) |
+| 2 Referenzen, Steckbrief-STOPP | nein — kein Produktbild im Edit, markenunabhängig |
+| 3 Handlungs-Inventar | ja |
+| 4–6 Frame-Bau, Animation, Schnitt | nein — ersetzt durch Referenz 3–8 |
+| 7 Prüfer | Loop-Regeln ja; Zeilen T1–T6 aus Referenz 9 |
+| 8 Ablage, Sichtung, Kosten | ja, Namen und Kosten nach Referenz 0 und 10; das harte Gate gilt dem Produkt-Label — Gate für Text: Referenz 10 |
+| 8b Endcards | nur mit umzubrandendem Produkt (die Karten-Edits übersetzen den Text mit); unbeschriftetes oder eigenes Produkt → Text-Endcard hier |
+| 9 Einbau | nur mit Schnittliste; Speaking-Kette: Referenz 10 |
+
+Clip mit umzubrandendem Produkt UND englischem Text: Weg nach Abschnitt 4–6, der Frame-Edit
+übersetzt den Text mit.
+
+Abhak-Liste je Clip (in `_custom-clips/pruefer.md` mitführen; Nummern = Abschnitte der Referenz):
+```
+- [ ] 1 Fenster frame-genau, Wortlaut belegt — erst dann bezahlte Schritte
+- [ ] 2 Bibliothek gesucht, Weg gewählt (Ebene | Kling Start+End)
+- [ ] 3 Start-/End-Frame gezogen, Rest-Scan sauber
+- [ ] 4 Edits als Composite, jede Zeile im 2,5×-Zoom gelesen
+- [ ] 5 End-Frame nach der Lage des Textes gebaut
+- [ ] 6 Kling Start+End (Abbruch: Stand per Task-ID holen, nicht neu würfeln)
+- [ ] 7 Rohclip nach seiner Zeile aus 5 geprüft, Zoom in Bewegung
+- [ ] 8 auf Fenster-Frames abgebildet (Basis: `bild_lipsync.mp4`, falls vorhanden), Bewegungsmaß gemessen, Blenden/Ebenen nachgezeichnet
+- [ ] 9 Prüfer T1–T6 grün
+- [ ] 10 Gate-Dokument vorgelegt, `schnitt` rendert `bild_custom.mp4`, Bibliothek, Kosten gebucht
+```
+
+## 11. Abnahme: kein englisches Wort bleibt im Bild
+
+Eine Rip-Ad ist erst fertig, wenn im fertigen Render **kein englisches Wort mehr im Bild
+steht** — nicht nur in den Clips, die die Clip-Karte markiert hat. Gemeint ist jeder
+sichtbare Text: Titel, Aufschriften auf Figuren und Objekten, Schilder, Bildschirme und
+Knöpfe, Produktaufdrucke, Endcard-Prägungen und eingebrannte Untertitel der Quelle.
+
+**Geprüft wird am Render, nicht an der Clip-Liste.** Die Clip-Karte kennt nur, was beim
+ersten Durchgang auffiel; was zwischen zwei Schnitten aufblitzt oder erst im Custom Clip
+neu entsteht, sieht nur der Blick aufs fertige Bild.
+
+Gegenprobe — `<pipeline>` ist der Pipeline-Ordner des Laufs aus seiner `karte.md`
+(`brands/<Brand>/<NNN> <Kette>`), `<awms>` die Projektwurzel. **Standard ist JEDER Frame**,
+nicht ein Raster: Eine Ad von 80 s sind 2.400 Bilder, das liest Apple Vision lokal in Minuten
+und kostet nichts. Dafür kann kein Wort mehr zwischen zwei Rasterpunkte rutschen — genau so
+wurde „NO TMJ RISK" gefunden, das ein 4-fps-Raster nicht sicher trifft. Nebeneffekt: Dateiindex
+= Frame-Nummer, die Frame-Falle unten entfällt.
+
+```bash
+cd "<pipeline>/_work"
+mkdir -p ocr_final && ffmpeg -v error -i final.mp4 ocr_final/%05d.jpg   # jeder Frame
+"<awms>/tools/sp/ocr_vision" ocr_final 30 > ocr_final.jsonl             # je Frame eine JSON-Zeile
+```
+
+Nur wenn der Render dafür zu lang ist (Longform, mehrere Minuten), auf ein Raster ausweichen
+(`-vf fps=4`, Werkzeug mit `4` aufrufen) — dann gilt die Frame-Falle im nächsten Absatz.
+
+Fehlt das Binary, einmal bauen: `swiftc -O "<awms>/tools/sp/ocr_vision.swift" -o "<awms>/tools/sp/ocr_vision"`.
+
+**Der gelesene Frame ist nicht der gerechnete.** `ffmpeg -vf fps=4` greift den Frame bei
+t + 1/8 s — bei 30 fps also drei bis vier Frames SPÄTER als `round(t*30)`. Wer eine Fundstelle
+mit der gerechneten Nummer nachschneidet, sieht einen sauberen Nachbarframe und hält den Fund
+für erledigt. Den wirklich gelesenen Frame deshalb über den Bild-Inhalt bestimmen (JPEG des
+OCR-Ordners gegen die Frames des Videos abgleichen), nicht über die Formel. Sonst überlebt
+genau das Wort, das nur wenige Frames steht.
+
+Die Wortliste aus `ocr_final.jsonl` durchgehen und jedes englische Wort mit seiner Sekunde
+notieren. Nicht als Fund zählen: Marken- und Produktnamen der eigenen Linie (Wortlaut im
+`produkt-steckbrief.md` der Brand) und Wörter, die im Deutschen genauso stehen. Bei
+widersprüchlichen Lesarten gewinnt der Vollbild-Blick auf den Frame, nicht die OCR-Zeile —
+Vision verliest kleine Schrift.
+
+Je offener Fundstelle gilt der **Custom-Clip-Weg** — auch bei flachem, ruhigem Text:
+der deutsche Text wird im Start- und End-Frame gesetzt (Composite, Abschnitt 10; sitzt
+ein umzubrandendes Produkt im Bild, Abschnitt 4–6), **Kling animiert nur die Bewegung**
+und schreibt nie selbst Schrift. Danach Prüfer-Loop, framegenauer Einbau, neu rendern.
+
+Den billigeren Weg — reiner Flächen-Nachbau ohne Clip, deterministisch und ohne Credits —
+gibt es nur mit **ausdrücklicher Freigabe für diesen Lauf**: Fundstellen, Kosten beider Wege
+und Messbefund als Popup vorlegen, Antwort in der `karte.md` vermerken. Ohne diese Freigabe
+wird der Clip gebaut, auch wenn die Fläche technisch tragen würde.
+
+Danach läuft die Gegenprobe erneut. **Erfolgs-Kriterium: null englische Wörter.** Solange
+eine Fundstelle offen ist, gilt der Lauf als nicht fertig — auch wenn `final.mp4` schon
+existiert. Findet die Gegenprobe nichts, wird die Zeile `bildtext-deutsch: geprüft (N Frames,
+0 Funde)` in die `karte.md` des Laufs geschrieben; sie ist der Beleg für die Abnahme.
